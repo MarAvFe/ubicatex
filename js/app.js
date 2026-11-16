@@ -1,11 +1,11 @@
 // UI: screens, map rendering, input, the frame loop. Rules live in engine.js.
 import {
-  addScore, cleanInitials, createGame, dailySeed, levelRules, localDate, multiplier, rankFor,
-  seededRng, shareText, RULES,
+  addScore, cleanInitials, createGame, levelRules, localDate, multiplier, num as fmt, rankFor, shareText, RULES,
 } from "./engine.js";
 import { silentSound } from "./sound.js";
 
 const SVG = "http://www.w3.org/2000/svg";
+const SCREENS = ["home", "play", "learn", "over", "scores"];
 // Fill colours for placed regions, cycled by region order. Chosen to stay
 // distinguishable from each other and from the unplaced cream.
 const PALETTE = ["#f4a261", "#2a9d8f", "#e76f51", "#8ab17d", "#e9c46a", "#577590", "#b5838d", "#43aa8b", "#f28482"];
@@ -19,8 +19,6 @@ const CLUE_HINT = {
 // A tap this close (CSS px) to the right region counts as on it. Fingers are wider
 // than the smallest regions; see docs/MAPS.md. tools/build_pack.py uses the same number.
 const TAP_SLOP_PX = 14;
-const MARK = { g: "🟩", y: "🟨", r: "🟥" };
-const fmt = (n) => n.toLocaleString("es-CR");
 
 export async function loadJson(url) {
   const res = await fetch(url);
@@ -28,20 +26,18 @@ export async function loadJson(url) {
   return res.json();
 }
 
-// opts: { makeSound, rng (free play only; tests), today }
+// opts: { makeSound, rng (tests) }
 export function createApp(doc, store, opts = {}) {
   const $ = (id) => doc.getElementById(id);
-  const saved = { scores: {}, daily: {}, initials: "", muted: false, lastPack: null, ...(store.load() ?? {}) };
+  const saved = { scores: {}, initials: "", muted: false, lastPack: null, ...(store.load() ?? {}) };
   const save = () => store.save(saved);
   const sound = (opts.makeSound ?? silentSound)(() => saved.muted);
-  const today = opts.today ?? localDate;
   const listeners = new AbortController(); // lets the self-test remove every handler
   const on = (target, type, fn) => target.addEventListener(type, fn, { signal: listeners.signal });
 
   let index = null;
   let pack = null;
   let game = null;
-  let mode = "free";
   let paused = false;
   let frame = 0;
   let pieceX = 0.5;
@@ -49,12 +45,11 @@ export function createApp(doc, store, opts = {}) {
   let lastResult = null;
 
   function show(screen) {
-    for (const id of ["home", "play", "over", "scores"]) $(id).hidden = id !== screen;
+    for (const id of SCREENS) $(id).hidden = id !== screen;
     sound.music(screen !== "play");
   }
 
   const table = (id) => saved.scores[id] ?? [];
-  const dailyDone = (id) => (saved.daily[id]?.date === today() ? saved.daily[id] : null);
 
   // ---- Home ----
 
@@ -74,19 +69,17 @@ export function createApp(doc, store, opts = {}) {
       on(btn, "click", () => { sound.tap(); saved.lastPack = p.id; save(); showHome(); });
       nav.append(btn);
     }
-    nav.querySelector('[aria-pressed="true"]')?.scrollIntoView?.({ inline: "center", block: "nearest" });
+    // Centre the chosen chip by scrolling the strip only (scrollIntoView also scrolls the page).
+    const current = nav.querySelector('[aria-pressed="true"]');
+    if (current) nav.scrollLeft = current.offsetLeft - (nav.clientWidth - current.offsetWidth) / 2;
     $("pack-title").textContent = `${chosen.flag} ${chosen.title} · ${chosen.subtitle}`;
     const best = table(chosen.id)[0];
     $("pack-sub").textContent = `${chosen.count} ${chosen.noun}` + (best ? ` · récord ${fmt(best.score)} (${best.name})` : "");
-    const done = dailyDone(chosen.id);
-    $("play-daily").textContent = done ? "Ver el reto de hoy" : "Reto del día";
-    $("daily-note").textContent = done ? `Hoy: ${fmt(done.score)} puntos ${done.marks.map((m) => MARK[m]).join("")}` : "";
-    $("play-daily").onclick = () => (done ? showDailyResult(chosen.id) : start(chosen.id, "daily"));
-    $("play-free").onclick = () => start(chosen.id, "free");
+    $("play-free").onclick = () => start(chosen.id);
+    $("show-map").onclick = () => showLearn(chosen.id);
     $("show-scores").onclick = () => showScores(chosen.id);
     // The data licences ask for credit where the map is offered, not only where it is drawn.
-    $("credits").textContent = [...new Set(index.packs.map((p) => p.attribution))].join(" · ") +
-      " · Nombres y capitales: Wikidata";
+    $("credits").textContent = [...new Set(index.packs.flatMap((p) => p.attribution.split(" · ")))].join(" · ");
     drawMute();
     show("home");
   }
@@ -103,20 +96,19 @@ export function createApp(doc, store, opts = {}) {
     sound.tap();
   }
 
-  // ---- Map ----
+  // ---- Map drawing (shared by play and the study map) ----
 
   async function usePack(packId) {
     if (!pack || pack.id !== packId) pack = await loadJson(`packs/${packId}.json`);
-    index ??= await loadJson("packs/index.json");
+    saved.lastPack = packId;
     return pack;
   }
 
-  function drawMap() {
-    const svg = $("map");
+  function drawMap(svg, stage) {
     svg.setAttribute("viewBox", `0 0 ${pack.viewBox[0]} ${pack.viewBox[1]}`);
     svg.setAttribute("class", pack.theme === "sea" ? "sea" : "land");
     // World maps are twice as wide as tall: on a phone held upright they are a strip.
-    $("stage").classList.toggle("wide", pack.viewBox[0] / pack.viewBox[1] > 1.6);
+    stage.classList.toggle("wide", pack.viewBox[0] / pack.viewBox[1] > 1.6);
     svg.replaceChildren();
     // Neighbouring land, open water and the globe outline: context, never tappable.
     for (const bg of pack.background ?? []) {
@@ -142,26 +134,34 @@ export function createApp(doc, store, opts = {}) {
       labels.append(text);
     });
     svg.append(labels); // after the paths so names are never covered
-    sizeLabels();
   }
 
   // Names keep the same size on screen whatever the map's scale: readable on a world
   // map, not huge on a single country.
-  function sizeLabels() {
-    const svg = $("map");
+  function sizeLabels(svg) {
     const ctm = svg.getScreenCTM?.();
     if (!ctm || !ctm.a) return;
     const px = doc.defaultView.innerWidth < 600 ? 12 : 16;
     svg.style.setProperty("--label-size", `${(px / ctm.a).toFixed(2)}px`);
   }
 
-  const regionEl = (id) => $("map").querySelector(`path[data-id="${id}"]`);
-  const labelEl = (id) => $("map").querySelector(`text[data-for="${id}"]`);
+  const regionEl = (id, svg = $("map")) => svg.querySelector(`path[data-id="${id}"]`);
+  const labelEl = (id, svg = $("map")) => svg.querySelector(`text[data-for="${id}"]`);
 
   function clearMap() {
-    for (const el of $("map").querySelectorAll(".placed, .reveal, .wrong, .shown")) {
-      el.classList.remove("placed", "reveal", "wrong", "shown");
+    for (const el of $("map").querySelectorAll(".placed, .reveal, .shown, .peek")) {
+      el.classList.remove("placed", "reveal", "shown", "peek");
     }
+  }
+
+  // A short colour pulse that leaves the map as it was: the map does not fill up
+  // during a level, so the player cannot tell what is left by looking.
+  function flash(el, cls) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.getBoundingClientRect(); // restart the animation on a repeat
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), 800);
   }
 
   // Where a region's label point sits inside the stage, in CSS pixels.
@@ -190,8 +190,7 @@ export function createApp(doc, store, opts = {}) {
     path.style.strokeWidth = String(2 * reach);
     const near = path.isPointInFill(p) || path.isPointInStroke(p);
     path.style.strokeWidth = before;
-    if (near) return wanted;
-    return hit;
+    return near ? wanted : hit;
   }
 
   // ---- Falling piece ----
@@ -274,33 +273,48 @@ export function createApp(doc, store, opts = {}) {
   function drawHud() {
     const s = game.state;
     $("score").textContent = fmt(s.score);
-    $("level-label").textContent = s.daily ? "Pieza" : "Nivel";
-    $("level").textContent = s.daily ? `${Math.min(s.total, s.marks.length + 1)}/${s.total}` : Math.max(1, s.level);
+    $("level").textContent = Math.max(1, s.level);
     const mult = multiplier(s.streak);
     $("combo").textContent = `×${mult}`;
     $("combo").classList.toggle("hot", mult > 1);
-    $("lives").hidden = s.daily;
     $("lives").textContent = "♥".repeat(Math.max(0, s.lives)) + "♡".repeat(RULES.lives - Math.max(0, s.lives));
   }
 
   // ---- Game flow ----
 
-  async function start(packId, newMode = "free") {
+  async function start(packId) {
     await usePack(packId);
-    mode = newMode;
-    saved.lastPack = packId;
-    drawMap();
-    // The daily game is seeded by map and date, so everyone gets the same ten pieces.
-    const rng = mode === "daily" ? seededRng(dailySeed(packId, today())) : (opts.rng ?? Math.random);
-    game = createGame(pack.regions.map((r) => r.id), rng, { hasCapitals: pack.hasCapitals, daily: mode === "daily" });
+    drawMap($("map"), $("stage"));
+    game = createGame(pack.regions.map((r) => r.id), opts.rng ?? Math.random, { hasCapitals: pack.hasCapitals });
     paused = false;
-    $("paused").hidden = true;
-    $("piece").hidden = true;
-    $("banner").hidden = true;
+    for (const id of ["paused", "piece", "banner", "review"]) $(id).hidden = true;
     show("play");
-    sizeLabels(); // needs the map on screen to measure
+    sizeLabels($("map")); // needs the map on screen to measure
     drawHud();
     startLoop();
+  }
+
+  // End of a level (or of the game): only what was placed gets its colour and name,
+  // and nothing moves until the player has looked and pressed the button.
+  function showReview(e, gameOver) {
+    for (const id of e.placed) {
+      regionEl(id)?.classList.add("placed");
+      labelEl(id)?.classList.add("shown");
+    }
+    $("piece").hidden = true;
+    $("banner").hidden = true;
+    const right = new Set(e.placed).size;
+    $("review-title").textContent = gameOver ? "Fin del juego" : `Nivel ${e.level} superado`;
+    $("review-sub").textContent = `${right} de ${e.total} ${pack.noun}` +
+      (gameOver ? "" : ` · +${fmt(e.bonus)}${e.lifeBack ? " · +1 vida" : ""}`);
+    $("review-next").textContent = gameOver ? "Ver resultado" : "Siguiente";
+    $("review-next").onclick = () => {
+      $("review").hidden = true;
+      sound.tap();
+      if (gameOver) finish();
+      else game.next();
+    };
+    $("review").hidden = false;
   }
 
   function handle(events) {
@@ -308,29 +322,24 @@ export function createApp(doc, store, opts = {}) {
       const region = e.id && pack.regions.find((r) => r.id === e.id);
       if (e.type === "level") {
         clearMap();
-        if (game.state.daily) banner("Reto del día", `${game.state.total} piezas`);
-        else banner(`Nivel ${e.level}`, CLUE_HINT[levelRules(e.level, pack.hasCapitals).clue]);
+        banner(`Nivel ${e.level}`, CLUE_HINT[levelRules(e.level, pack.hasCapitals).clue]);
       } else if (e.type === "spawn") {
+        // A shown answer stays only until the next piece appears.
+        for (const el of $("map").querySelectorAll(".reveal, .peek")) el.classList.remove("reveal", "peek");
         drawPiece(e);
       } else if (e.type === "correct") {
-        regionEl(e.id).classList.add("placed");
-        labelEl(e.id).classList.add("shown");
+        flash(regionEl(e.id), "good");
         zapPiece(region);
         floatText(stagePoint(region), `+${fmt(e.points)}${e.mult > 1 ? ` ×${e.mult}` : ""}`, "good");
         sound.good(e.mult);
       } else if (e.type === "wrong") {
-        const el = regionEl(e.id);
-        if (el) {
-          el.classList.remove("wrong");
-          void el.getBoundingClientRect(); // restart the animation on a repeated wrong tap
-          el.classList.add("wrong");
-        }
+        flash(regionEl(e.id), "wrong");
         sound.bad();
       } else if (e.type === "miss") {
         $("piece").classList.add("lost");
         if (e.reveal) {
           regionEl(e.id).classList.add("reveal");
-          labelEl(e.id).classList.add("shown");
+          labelEl(e.id).classList.add("peek");
           floatText(stagePoint(region), "Era aquí", "bad");
         } else {
           const stage = $("stage");
@@ -338,17 +347,21 @@ export function createApp(doc, store, opts = {}) {
         }
         sound.miss();
       } else if (e.type === "levelclear") {
-        banner("Nivel superado", `+${fmt(e.bonus)}${e.lifeBack ? " · +1 vida" : ""}`, 1700);
+        showReview(e, false);
         sound.levelUp();
       } else if (e.type === "over") {
-        finish();
+        stopLoop();
+        showReview(e, true);
+        sound.over();
       }
     }
     if (events.length) drawHud();
   }
 
   function step(dtMs) {
-    if (!game || paused || game.state.phase === "over") return;
+    if (!game || paused) return;
+    const phase = game.state.phase;
+    if (phase === "over" || phase === "review") return;
     handle(game.tick(dtMs));
     const piece = game.state.current;
     if (piece) movePiece(piece.elapsed / piece.fallMs);
@@ -363,51 +376,23 @@ export function createApp(doc, store, opts = {}) {
   function finish() {
     stopLoop();
     const s = game.state;
-    lastResult = {
-      daily: s.daily, date: today(), score: s.score, level: s.level, bestStreak: s.bestStreak,
-      correct: s.correct, marks: s.marks.slice(),
-    };
-    if (s.daily) {
-      // Only the first attempt of the day counts, as it would on paper.
-      if (!dailyDone(pack.id)) {
-        saved.daily[pack.id] = { date: lastResult.date, score: s.score, marks: lastResult.marks };
-        save();
-      }
-    }
-    showOver(lastResult);
-    if (!s.daily && rankFor(table(pack.id), s.score) !== -1) sound.record(); else sound.over();
-  }
-
-  function showOver(result) {
-    const rank = result.daily ? -1 : rankFor(table(pack.id), result.score);
-    const entering = rank !== -1 && !result.saved;
+    lastResult = { date: localDate(), score: s.score, level: s.level, bestStreak: s.bestStreak, correct: s.correct };
+    const rank = rankFor(table(pack.id), s.score);
     $("over-pack").textContent = `${pack.flag} ${pack.title} · ${pack.subtitle}`;
-    $("over-title").textContent = result.daily ? `Reto del ${result.date}` : rank === 0 ? "¡Nuevo récord!" : "Fin del juego";
-    $("over-score").textContent = fmt(result.score);
-    $("over-marks").hidden = !result.daily;
-    $("over-marks").textContent = result.marks.map((m) => MARK[m]).join("");
-    $("over-stats").hidden = result.daily;
-    $("over-level").textContent = result.level;
-    $("over-correct").textContent = result.correct;
-    $("over-streak").textContent = result.bestStreak;
-    $("over-note").hidden = !result.daily;
-    $("over-note").textContent = "Mañana hay un reto nuevo. Mientras tanto, el juego libre no tiene límite.";
-    $("entry").hidden = !entering;
-    $("over-actions").hidden = entering;
-    $("again").textContent = result.daily ? "Juego libre" : "Jugar otra vez";
+    $("over-title").textContent = rank === 0 ? "¡Nuevo récord!" : "Fin del juego";
+    $("over-score").textContent = fmt(s.score);
+    $("over-level").textContent = s.level;
+    $("over-correct").textContent = s.correct;
+    $("over-streak").textContent = s.bestStreak;
+    $("entry").hidden = rank === -1;
+    $("over-actions").hidden = rank !== -1;
     $("share").textContent = "Compartir resultado";
     show("over");
-    if (entering) {
+    if (rank !== -1) {
+      sound.record();
       $("initials").value = saved.initials;
       $("initials").focus?.();
     }
-  }
-
-  async function showDailyResult(packId) {
-    await usePack(packId);
-    const d = dailyDone(packId);
-    lastResult = { daily: true, date: d.date, score: d.score, marks: d.marks, level: 1, bestStreak: 0, correct: 0 };
-    showOver(lastResult);
   }
 
   function submitInitials() {
@@ -418,8 +403,31 @@ export function createApp(doc, store, opts = {}) {
     saved.scores[pack.id] = next;
     saved.initials = name;
     save();
-    lastResult.saved = true;
     return showScores(pack.id, rank);
+  }
+
+  // ---- Study map: everything placed and named, to read before playing ----
+
+  async function showLearn(packId) {
+    await usePack(packId);
+    const svg = $("learn-map");
+    drawMap(svg, $("learn-stage"));
+    for (const el of svg.querySelectorAll(".region")) el.classList.add("placed");
+    for (const el of svg.querySelectorAll(".labels text")) el.classList.add("shown");
+    $("learn-title").textContent = `${pack.flag} ${pack.title} · ${pack.subtitle}`;
+    $("learn-info").textContent = "Toque una región para ver su nombre.";
+    show("learn");
+    sizeLabels(svg);
+  }
+
+  function learnTap(id) {
+    const r = pack.regions.find((x) => x.id === id);
+    if (!r) return;
+    const svg = $("learn-map");
+    for (const el of svg.querySelectorAll(".selected")) el.classList.remove("selected");
+    regionEl(id, svg).classList.add("selected");
+    $("learn-info").textContent = r.name + (pack.hasCapitals ? ` · capital: ${r.capital}` : "");
+    sound.tap();
   }
 
   // ---- Top scores ----
@@ -441,13 +449,14 @@ export function createApp(doc, store, opts = {}) {
       }
       list.append(li);
     }
-    $("scores-play").onclick = () => start(packId, "free");
+    $("scores-play").onclick = () => start(packId);
     show("scores");
   }
 
   async function share() {
-    // A localhost link is useless to whoever receives the message.
-    const local = ["localhost", "127.0.0.1", ""].includes(doc.location.hostname);
+    // A local link is useless to whoever receives the message.
+    const host = doc.location.hostname;
+    const local = !host || host === "localhost" || /^(127|10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(host);
     const text = shareText(pack, lastResult, local ? "" : doc.location.origin + doc.location.pathname);
     try {
       if (navigator.share) await navigator.share({ text });
@@ -483,12 +492,14 @@ export function createApp(doc, store, opts = {}) {
 
   on(doc, "pointerdown", () => sound.unlock());
   on($("map"), "pointerdown", (ev) => tap(regionAt(ev.clientX, ev.clientY, ev.target)));
+  on($("learn-map"), "pointerdown", (ev) => learnTap(ev.target.closest?.("path[data-id]")?.dataset.id));
+  on($("learn-back"), "click", () => showHome());
   on($("pause"), "click", () => setPaused(true));
   on($("resume"), "click", () => setPaused(false));
   on($("quit"), "click", () => showHome());
   on($("mute"), "click", toggleMute);
   on($("mute-pause"), "click", toggleMute);
-  on($("again"), "click", () => start(pack.id, "free"));
+  on($("again"), "click", () => start(pack.id));
   on($("share"), "click", share);
   on($("over-scores"), "click", () => showScores(pack.id));
   on($("home-btn"), "click", () => showHome());
@@ -496,16 +507,20 @@ export function createApp(doc, store, opts = {}) {
   on($("entry"), "submit", (ev) => { ev.preventDefault(); submitInitials(); });
   on($("initials"), "input", (ev) => { ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
   on(doc, "visibilitychange", () => { if (doc.hidden) setPaused(true); });
-  on(doc.defaultView, "resize", () => { if (pack && !$("play").hidden) sizeLabels(); });
+  on(doc.defaultView, "resize", () => {
+    if (pack && !$("play").hidden) sizeLabels($("map"));
+    if (pack && !$("learn").hidden) sizeLabels($("learn-map"));
+  });
   on(doc, "keydown", (ev) => {
     if (ev.target === $("initials")) return;
     if (ev.key === "Escape" || ev.key === "p") setPaused(!paused);
+    if ((ev.key === "Enter" || ev.key === " ") && !$("review").hidden) { ev.preventDefault(); $("review-next").click(); }
   });
 
   function destroy() { stopLoop(); sound.music(false); listeners.abort(); }
 
   return {
-    showHome, start, step, tap, regionAt, setPaused, stopLoop, submitInitials, showScores, destroy,
+    showHome, start, step, tap, regionAt, setPaused, stopLoop, submitInitials, showScores, showLearn, learnTap, destroy,
     get game() { return game; }, get pack() { return pack; },
   };
 }

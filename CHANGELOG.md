@@ -7,6 +7,9 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- "Mapa" view: every map coloured and named for study; tap a region for its name and capital.
+- End-of-level review: the right answers colour in and the game waits for "Siguiente".
+- `tools/lan-open.ps1` / `tools/lan-close.ps1` to play from a phone on the home network.
 - The game: pieces fall and the player taps their place on the map; levels, speed and streak scoring,
   three lives, per-map records, pause, share as text.
 - Map pack *Costa Rica · Provincias* and the generator that builds packs from boundary GeoJSON.
@@ -25,6 +28,11 @@ All notable changes to this project are documented here. The format follows
 - A hint to turn the phone sideways on world maps.
 
 ### Changed
+- The game is now called Ubícate.
+- The map stays white during a level; right answers only flash.
+- Home menu is Jugar, Mapa, Mejores puntajes. The daily challenge is hidden.
+- Capitals are only played on the country maps.
+- Numbers are written 1,130 instead of 1 130.
 - The falling piece is a bare outlined silhouette and name, without a box.
 - From level 3 a missed piece is no longer revealed; it falls again later.
 - A tap within 14 px of the right region counts as right, measured exactly.

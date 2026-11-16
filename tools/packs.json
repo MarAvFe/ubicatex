@@ -198,7 +198,8 @@
         }
       ],
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
-      "min_step": 1.5
+      "min_step": 1.5,
+      "capitals": true
     },
     {
       "id": "centroamerica-paises",
@@ -255,7 +256,8 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "capitals": true
     },
     {
       "id": "sudamerica-paises",
@@ -318,7 +320,8 @@
         }
       ],
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
-      "min_step": 1.5
+      "min_step": 1.5,
+      "capitals": true
     },
     {
       "id": "cr-provincias",
@@ -352,7 +355,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "gt-departamentos",
@@ -380,7 +383,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "bz-distritos",
@@ -408,7 +411,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "sv-departamentos",
@@ -436,7 +439,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "hn-departamentos",
@@ -464,7 +467,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "ni-departamentos",
@@ -492,7 +495,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     },
     {
       "id": "pa-provincias",
@@ -520,7 +523,7 @@
           }
         }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata"
     }
   ]
 }

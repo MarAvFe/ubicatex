@@ -19,8 +19,9 @@ adding the next map is a data task.
   the same ladder, so capitals of countries come for free.
 - **Reward speed and streaks, not grinding.** Points scale with how early the answer comes; first-try
   streaks multiply.
-- **One game a day that everyone shares.** The daily challenge is seeded by map and date: ten pieces, once,
-  with a result made to paste into a chat.
+- **The map stays white during a level.** You cannot eliminate by looking; at the end of the level your
+  right answers colour in and the game waits for you. Learning pauses come before speed.
+- **Study before you play.** Every map has a "Mapa" view with everything named.
 - **Arcade, not account.** Top ten per map with three-letter names, on the device. No server.
 - **Maps are packs.** One JSON file per map, generated from open boundary data and Wikidata names.
 - **No zoom.** Small regions are handled by forgiving near taps, and each map gets a generated assessment
@@ -38,9 +39,11 @@ audio.
    return, daily challenge, arcade top scores, sound, tap assessment.
 3. **Done:** North and South America, world continents, oceans, seas; neighbouring land drawn as
    context on every map.
-4. Check names and capitals against official sources (needed before hosting).
-5. San José cantones: subset filter in the generator; decide what to do about regions too small to see.
-6. Hosting, when asked. A shared top-score table would need a server and is a separate decision.
+4. **Done:** white map with end-of-level review, study map, Jugar/Mapa/Puntajes menu, daily challenge
+   hidden, capitals limited to country maps, new name.
+5. Check province names and capitals against official sources; then they can get a capital level.
+6. San José cantones: subset filter in the generator; decide what to do about regions too small to see.
+7. Hosting, when asked. A shared top-score table would need a server and is a separate decision.
 
 ## Assumptions register
 

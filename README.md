@@ -1,4 +1,4 @@
-# Mapazo (zip-zap-map-cr)
+# Ubícate (zip-zap-map-cr)
 
 **A geography game in Spanish for the browser: continents, oceans, seas, countries and provinces fall from the
 top of the screen and you tap where each one belongs on the map before it lands.**
@@ -15,6 +15,10 @@ top of the screen and you tap where each one belongs on the map before it lands.
 
 Then open <http://localhost:8000/>. It is a static site with no build step, so any static host works too.
 
+**On a phone on the same Wi-Fi:** once, in Windows, run `tools\lan-open.ps1` as administrator (it prints
+the address to open, such as `http://192.168.100.99:8000/`). Run it again after restarting the PC.
+`tools\lan-close.ps1` undoes it. Only devices on your home network can connect.
+
 | Do | Key | Action |
 |----|-----|--------|
 | Tap or click a province | | Places the falling piece there |
@@ -22,16 +26,18 @@ Then open <http://localhost:8000/>. It is a static site with no build step, so a
 
 ## How it plays
 
-- **Free play.** Each level is one pass through every region: name and shape, then name only, shape only,
-  capital only (★), then everything mixed and faster.
+- From the home screen: **Jugar**, **Mapa** (the whole map coloured and named, to study; tap a region for
+  its name, and its capital on country maps) and **Mejores puntajes**.
+- Each level is one pass through every region: name and shape, then name only, shape only, capital only
+  (★, country maps only), then everything mixed and faster.
+- **The map does not fill up while you play.** A right answer flashes and the map goes back to white, so
+  you cannot tell what is left by looking. At the end of each level the map shows your right answers in
+  colour, and the game waits for **Siguiente**.
 - A faster answer scores more. Three first-try answers in a row raise the multiplier, up to ×5.
 - Three lives. A piece that reaches the ground costs one; a level with no mistakes gives one back.
-- In levels 1 and 2 a missed piece shows where it belonged. From level 3 the place stays empty and the
-  piece falls again later.
-- **Daily challenge.** Up to ten pieces (each region once on smaller maps), the same for everyone on the same
-  day and map, played once. The result shares as a row of coloured squares.
-- **Top scores.** The best ten per map, with three-letter names, as on an arcade machine. They are kept on
-  the device; there are no accounts and no server.
+- In levels 1 and 2 a missed piece shows where it belonged. From level 3 it falls again later instead.
+- **Top scores.** The best ten per map, with three-letter names, as on an arcade machine, kept on the
+  device. No accounts, no server.
 - Sound effects and a quiet menu tune, both synthesised; one button turns them off.
 
 ## Maps

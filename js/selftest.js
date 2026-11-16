@@ -1,7 +1,7 @@
 // Self-test: open index.html#selftest, or run ./selftest.sh. Runs on in-memory
 // storage, never on the player's saved records.
 import {
-  addScore, cleanInitials, createGame, dailySeed, levelRules, multiplier, rankFor, seededRng, shareText, shuffle, RULES,
+  addScore, cleanInitials, createGame, dailySeed, levelRules, multiplier, num, rankFor, seededRng, shareText, shuffle, RULES,
 } from "./engine.js";
 import { createApp, loadJson } from "./app.js";
 import { memoryStore } from "./store.js";
@@ -17,6 +17,7 @@ function ok(cond, what) { if (!cond) throw new Error(what); }
 function play(game, decide, maxSteps = 200000) {
   const log = [];
   for (let i = 0; i < maxSteps && game.state.phase !== "over"; i++) {
+    if (game.state.phase === "review") game.next(); // the bot has seen the level
     log.push(...game.tick(50));
     const piece = game.state.current;
     if (piece) {
@@ -148,6 +149,26 @@ const tests = {
       eq(game.state.total, IDS.length);
     }
   },
+  "a cleared level waits for next() and reports what was placed"() {
+    const game = createGame(IDS, seededRng(11));
+    let dropped = false;
+    for (let i = 0; i < 2000 && game.state.phase !== "review"; i++) {
+      game.tick(50);
+      const p = game.state.current;
+      if (p && !(p.id === "c" && !dropped)) game.answer(p.id);
+      if (p && p.id === "c" && p.elapsed >= p.fallMs - 50) dropped = true;
+    }
+    eq(game.state.phase, "review");
+    for (let i = 0; i < 100; i++) eq(game.tick(1000).length, 0, "time moved during the review:");
+    game.next();
+    const events = [];
+    for (let i = 0; i < 100 && !events.some((e) => e.type === "spawn"); i++) events.push(...game.tick(50));
+    eq(events[0].type, "level");
+    eq(events[0].level, 2);
+  },
+  "numbers are written with commas, without spaces"() {
+    eq(num(1130), "1,130"); eq(num(25), "25"); eq(num(1234567), "1,234,567");
+  },
   "the score table keeps the best ten in order, and initials are three clean characters"() {
     let table = [];
     for (const score of [50, 300, 100, 200, 10, 20, 30, 40, 60, 70, 80, 90]) table = addScore(table, { name: "AAA", score }).table;
@@ -206,7 +227,10 @@ const tests = {
     for (const p of index.packs) eq(p.count, want[p.id], `${p.id}:`);
     const cr = await loadJson("packs/cr-provincias.json");
     eq(cr.regions.map((r) => r.name).join(), "Alajuela,Cartago,Guanacaste,Heredia,Limón,Puntarenas,San José");
-    eq(cr.regions.find((r) => r.name === "Guanacaste").capital, "Liberia");
+    // Province capitals are not verified yet, so province maps have no capital level.
+    eq(cr.hasCapitals, false, "province map with capitals:");
+    ok(cr.regions.every((r) => !("capital" in r)), "a province map carries capitals");
+    eq((await loadJson("packs/centroamerica-paises.json")).hasCapitals, true, "country map without capitals:");
     const world = await loadJson("packs/mundo-continentes.json");
     eq(world.regions.map((r) => r.name).join(), "América,Antártida,Asia,Europa,Oceanía,África");
     eq(world.hasCapitals, false, "continents have no capitals:");
@@ -236,13 +260,18 @@ const tests = {
       eq(app.game.state.score, 0, "wrong tap:");
       tapOn(first);
       ok(app.game.state.score > 0, "correct tap did not score");
-      ok(document.querySelector(`#map path[data-id="${first}"]`).classList.contains("placed"), "region not marked placed");
+      eq(document.querySelectorAll("#map .placed").length, 0, "the map filled in during the level:");
       app.setPaused(true);
       app.step(60000);
       eq(app.game.state.lives, RULES.lives, "time ran while paused:");
       app.setPaused(false);
       for (let i = 0; i < 5000 && app.game.state.phase !== "over"; i++) app.step(100);
+      eq(document.getElementById("review").hidden, false, "no review before the results:");
+      eq(document.getElementById("review-next").textContent, "Ver resultado");
+      eq([...document.querySelectorAll("#map .placed")].map((p) => p.dataset.id).join(), first, "only the right answer is coloured:");
+      document.getElementById("review-next").click();
       eq(document.getElementById("over").hidden, false, "game-over screen hidden:");
+      ok(/^\d{1,3}(,\d{3})*$/.test(document.getElementById("over-score").textContent), "score format: " + document.getElementById("over-score").textContent);
       eq(document.getElementById("entry").hidden, false, "initials form hidden:");
       document.getElementById("initials").value = "mav";
       await app.submitInitials();
@@ -255,6 +284,7 @@ const tests = {
       await app.start("hn-departamentos");
       app.stopLoop();
       for (let i = 0; i < 400 && app.game.state.current?.id !== "HN-IB"; i++) {
+        if (app.game.state.phase === "review") document.getElementById("review-next").click();
         app.step(16);
         if (app.game.state.current && app.game.state.current.id !== "HN-IB") app.tap(app.game.state.current.id);
       }
@@ -280,21 +310,54 @@ const tests = {
       ok(document.getElementById("map").classList.contains("sea"), "ocean map without the sea theme");
     } finally { app.destroy(); }
   },
-  async "the daily challenge on the page: played once, then only shown"() {
-    const store = memoryStore();
-    const app = createApp(document, store, { today: () => "2026-11-16" });
+  async "a cleared level shows its answers and waits for Siguiente; the next level starts white"() {
+    const app = createApp(document, memoryStore(), { rng: seededRng(12) });
     try {
-      await app.start("centroamerica-paises", "daily");
+      await app.start("cr-provincias");
       app.stopLoop();
-      for (let i = 0; i < 5000 && app.game.state.phase !== "over"; i++) {
-        app.step(100);
-        if (app.game.state.current) app.tap(app.game.state.current.id);
+      let skipped = null;
+      for (let i = 0; i < 3000 && app.game.state.phase !== "review"; i++) {
+        app.step(50);
+        const p = app.game.state.current;
+        if (!p) continue;
+        if (skipped === null) skipped = p.id;      // let the first piece fall
+        if (p.id !== skipped) app.tap(p.id);
       }
-      eq(store.load().daily["centroamerica-paises"].marks.join(""), "ggggggg", "one piece per country:");
-      eq(document.getElementById("over-marks").textContent, "🟩".repeat(7));
-      eq(document.getElementById("entry").hidden, true, "daily must not ask for initials:");
+      eq(app.game.state.phase, "review");
+      eq(document.getElementById("review").hidden, false, "review hidden:");
+      ok(document.getElementById("review-sub").textContent.startsWith("6 de 7"), document.getElementById("review-sub").textContent);
+      eq(document.querySelectorAll("#map .placed").length, 6, "coloured regions:");
+      ok(!document.querySelector(`#map path[data-id="${skipped}"]`).classList.contains("placed"), "the missed region is coloured");
+      eq(document.querySelectorAll("#map .labels text.shown").length, 6, "names shown:");
+      app.step(60000);
+      eq(app.game.state.phase, "review", "the game moved on by itself:");
+      document.getElementById("review-next").click();
+      for (let i = 0; i < 100 && !app.game.state.current; i++) app.step(50);
+      eq(app.game.state.level, 2);
+      eq(document.querySelectorAll("#map .placed").length, 0, "level 2 did not start white:");
+    } finally { app.destroy(); }
+  },
+  async "the study map shows every region named, and a tap tells the name and capital"() {
+    const app = createApp(document, memoryStore());
+    try {
+      await app.showLearn("centroamerica-paises");
+      eq(document.getElementById("learn").hidden, false);
+      eq(document.querySelectorAll("#learn-map .region.placed").length, 7);
+      eq(document.querySelectorAll("#learn-map .labels text.shown").length, 7);
+      app.learnTap("CR");
+      eq(document.getElementById("learn-info").textContent, "Costa Rica · capital: San José");
+      await app.showLearn("cr-provincias");
+      app.learnTap("CR-G");
+      eq(document.getElementById("learn-info").textContent, "Guanacaste", "province maps show no capital:");
+    } finally { app.destroy(); }
+  },
+  async "the home menu offers Jugar, Mapa and Mejores puntajes, and no daily challenge"() {
+    const app = createApp(document, memoryStore());
+    try {
       await app.showHome();
-      eq(document.getElementById("play-daily").textContent, "Ver el reto de hoy");
+      const labels = [...document.querySelectorAll("#home .card button")].map((b) => b.textContent);
+      eq(labels.join(), "Jugar,Mapa,Mejores puntajes");
+      eq(document.getElementById("play-daily"), null, "daily button still in the page:");
     } finally { app.destroy(); }
   },
 };
@@ -304,7 +367,7 @@ export async function runSelftest(out) {
   for (const [name, fn] of Object.entries(tests)) {
     try { await fn(); } catch (e) { failures.push(`${name}: ${e.message}`); }
   }
-  for (const id of ["home", "play", "over", "scores"]) document.getElementById(id).hidden = true;
+  for (const id of ["home", "play", "learn", "over", "scores"]) document.getElementById(id).hidden = true;
   out.hidden = false;
   out.className = failures.length ? "fail" : "pass";
   out.textContent = failures.length

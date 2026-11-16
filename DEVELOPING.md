@@ -11,6 +11,7 @@ Static site, no build step, no dependencies.
 | `js/selftest.js` | tests, including bots that play whole games |
 | `packs/*.json` | generated map packs; `packs/index.json` lists them for the home screen |
 | `tools/build_pack.py`, `tools/packs.json` | generates the packs and `docs/MAPS.md` from `data/sources/` (about 30 s) |
+| `tools/lan-open.ps1`, `tools/lan-close.ps1` | let phones on the home network reach the WSL server (Windows, as admin) |
 | `tools/fetch_sources.py` | re-downloads and trims the Natural Earth files in `data/sources/` |
 
 Keep rules in `engine.js` so the self-test can cover them without a browser clock.

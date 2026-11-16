@@ -1,6 +1,9 @@
 // Game rules. No DOM, no storage, no clock: the caller feeds time in with tick(),
 // so the self-test can play whole games instantly and deterministically.
 
+// The player-facing name, in one place (index.html repeats it for the page title).
+export const GAME_NAME = "Ubícate";
+
 export const RULES = {
   lives: 3,
   basePoints: 100,
@@ -16,7 +19,7 @@ export const RULES = {
   // Pauses give the player time to see what happened before the next piece.
   pauseAfterCorrectMs: 550,
   pauseAfterMissMs: 1600, // longer: the right answer is being shown
-  pauseAfterLevelMs: 1800,
+  pauseAfterLevelMs: 900, // after "Siguiente", before the next level's first piece
   // Daily challenge: the same short game for everyone on a given day. Maps with fewer
   // regions play each one once instead; repeating one would drop a piece onto a place
   // already filled in.
@@ -83,7 +86,7 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
   const daily = !!opts.daily;
   const s = {
     daily,
-    phase: "pause", // "falling" | "pause" | "over"
+    phase: "pause", // "falling" | "pause" | "review" (level done, waiting for next()) | "over"
     pauseMs: 0,
     level: 0,
     lives: RULES.lives,
@@ -123,22 +126,31 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
     s.current = null;
     s.phase = "pause";
     s.pauseMs = pauseMs;
+    // Both end-of-level events carry what was placed, for the review of the level.
+    const review = { level: s.level, placed: s.placed.slice(), total: regionIds.length };
     if ((!daily && s.lives <= 0) || (daily && s.queue.length === 0)) {
       s.phase = "over";
-      events.push({ type: "over" });
+      events.push({ type: "over", ...review });
     } else if (!daily && s.queue.length === 0) {
       const bonus = RULES.levelBonus * s.level;
       s.score += bonus;
       const lifeBack = s.levelClean && s.lives < RULES.lives;
       if (lifeBack) s.lives += 1;
-      s.pauseMs += RULES.pauseAfterLevelMs;
-      events.push({ type: "levelclear", level: s.level, bonus, lifeBack });
+      // The game waits here until the player has looked at the level and pressed next().
+      s.phase = "review";
+      events.push({ type: "levelclear", bonus, lifeBack, ...review });
     }
+  }
+
+  function next() {
+    if (s.phase !== "review") return;
+    s.phase = "pause";
+    s.pauseMs = RULES.pauseAfterLevelMs;
   }
 
   function tick(dtMs) {
     const events = [];
-    if (s.phase === "over") return events;
+    if (s.phase === "over" || s.phase === "review") return events;
     if (s.phase === "pause") {
       s.pauseMs -= dtMs;
       if (s.pauseMs <= 0) spawn(events);
@@ -189,7 +201,7 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
     return events;
   }
 
-  return { state: s, tick, answer };
+  return { state: s, tick, answer, next };
 }
 
 // ---- Top scores (arcade table, kept on the device) ----
@@ -219,11 +231,12 @@ export function addScore(table, entry) {
 // ---- Sharing ----
 
 const MARK = { g: "🟩", y: "🟨", r: "🟥" };
-const num = (v) => v.toLocaleString("es-CR");
+// 1,130 rather than es-CR's "1 130": a space inside a number reads as two numbers.
+export const num = (v) => v.toLocaleString("en-US");
 
 // Text a player can paste into a chat. `url` is left out when empty.
 export function shareText(pack, result, url = "") {
-  const head = `Mapazo ${pack.flag} ${pack.title} · ${pack.subtitle}`;
+  const head = `${GAME_NAME} ${pack.flag} ${pack.title} · ${pack.subtitle}`;
   const lines = result.daily
     ? [`${head} — reto del ${result.date}`, result.marks.map((m) => MARK[m]).join(""), `${num(result.score)} puntos`]
     : [head, `${num(result.score)} puntos · nivel ${result.level} · racha de ${result.bestStreak}`];

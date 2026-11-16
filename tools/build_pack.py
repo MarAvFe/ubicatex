@@ -25,7 +25,7 @@ Each source in a pack entry turns features into regions:
                 French Guiana into America)
   fill_holes    GeoJSON of land: holes in a polygon with no land in them are filled
                 (Natural Earth's North Atlantic has a hole where the Sargasso Sea is)
-Pack fields beyond the obvious: projection (equirect, laea, equalearth), sphere (draw
+Pack fields beyond the obvious: capitals (true: add a capital level), projection (equirect, laea, equalearth), sphere (draw
 the globe outline as this background kind), min_step, theme ("sea" for water maps).
 Several features with the same key become one region (a continent, an ocean).
 """
@@ -447,7 +447,9 @@ def build(cfg):
             "box": main_box(view),
             "tapPx": round(2 * radius * phone_scale),
         }
-        if row["capitals"]:
+        # Capitals only where a pack asks for them: country maps, whose capitals were
+        # checked against a second source. Province capitals are not verified yet.
+        if row["capitals"] and cfg.get("capitals"):
             region["capital"] = " / ".join(row["capitals"])
         out.append(region)
     out.sort(key=lambda r: r["name"])

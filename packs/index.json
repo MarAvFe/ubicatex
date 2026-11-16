@@ -67,7 +67,7 @@
       "chip": "Costa Rica",
       "flag": "🇨🇷",
       "noun": "provincias",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 7
     },
     {
@@ -77,7 +77,7 @@
       "chip": "Guatemala",
       "flag": "🇬🇹",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 22
     },
     {
@@ -87,7 +87,7 @@
       "chip": "Belice",
       "flag": "🇧🇿",
       "noun": "distritos",
-      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 6
     },
     {
@@ -97,7 +97,7 @@
       "chip": "El Salvador",
       "flag": "🇸🇻",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 14
     },
     {
@@ -107,7 +107,7 @@
       "chip": "Honduras",
       "flag": "🇭🇳",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 18
     },
     {
@@ -117,7 +117,7 @@
       "chip": "Nicaragua",
       "flag": "🇳🇮",
       "noun": "departamentos y regiones",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 17
     },
     {
@@ -127,7 +127,7 @@
       "chip": "Panamá",
       "flag": "🇵🇦",
       "noun": "provincias y comarcas",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
       "count": 13
     }
   ]

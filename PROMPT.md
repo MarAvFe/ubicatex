@@ -32,3 +32,15 @@ No clarifying questions were asked; the assumptions taken are in `docs/DECISIONS
   > there was a bug in daily challenge: after the map was completed, 3 more options fell, over already resolved places. why would it?
   >
   > also, this is awesome! add north america and south america as well as a world-view with the 6 continents (America is 1). also add an oceans and seas mode.
+- 2026-11-16 —
+  > hmm it daily "bug" was a feature, maybe we keep it? but let's make it harder: map doesn't fill up. every piece goes on white map so it's not that easy to know which pieces are missing. once done, only the correct options color themselves.
+  >
+  > make sure port 8000 is open to router and I'll play on my phone.
+  >
+  > if province capitals are not verified, we could rule capitals mode to only continent level maps
+  >
+  > the way of writing long numbers is weird: "1 130". that's too much space for a number. put all together or add a comma.
+  >
+  > also, drop the daily challenge mode, i don't like it. or hide it. instead, the main menu has Play, Map and Scores. The Map option shows that map fully completed for users to read and learn. also after finishing a level, there is a "Next" confirmation button that allows the player to see his answers before moving on. these learning pauses are important.
+  >
+  > I don't like mapazo. think of another name.
