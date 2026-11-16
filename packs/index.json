@@ -1,11 +1,76 @@
 {
   "packs": [
     {
+      "id": "centroamerica-paises",
+      "title": "Centroamérica",
+      "subtitle": "Países",
+      "flag": "🌎",
+      "noun": "países",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 7
+    },
+    {
       "id": "cr-provincias",
       "title": "Costa Rica",
       "subtitle": "Provincias",
       "flag": "🇨🇷",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "noun": "provincias",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 7
+    },
+    {
+      "id": "gt-departamentos",
+      "title": "Guatemala",
+      "subtitle": "Departamentos",
+      "flag": "🇬🇹",
+      "noun": "departamentos",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 22
+    },
+    {
+      "id": "bz-distritos",
+      "title": "Belice",
+      "subtitle": "Distritos",
+      "flag": "🇧🇿",
+      "noun": "distritos",
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5)",
+      "count": 6
+    },
+    {
+      "id": "sv-departamentos",
+      "title": "El Salvador",
+      "subtitle": "Departamentos",
+      "flag": "🇸🇻",
+      "noun": "departamentos",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0)",
+      "count": 14
+    },
+    {
+      "id": "hn-departamentos",
+      "title": "Honduras",
+      "subtitle": "Departamentos",
+      "flag": "🇭🇳",
+      "noun": "departamentos",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 18
+    },
+    {
+      "id": "ni-departamentos",
+      "title": "Nicaragua",
+      "subtitle": "Departamentos y regiones",
+      "flag": "🇳🇮",
+      "noun": "departamentos y regiones",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 17
+    },
+    {
+      "id": "pa-provincias",
+      "title": "Panamá",
+      "subtitle": "Provincias y comarcas",
+      "flag": "🇵🇦",
+      "noun": "provincias y comarcas",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "count": 13
     }
   ]
 }

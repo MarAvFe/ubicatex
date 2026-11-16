@@ -23,3 +23,18 @@ Format: reading taken — reason — how to change.
 - **Islets under 1% of their region's main area are dropped.** — Untappable and unrecognisable at phone size. — `MIN_PART_SHARE` in `tools/build_pack.py`.
 - **Simple equirectangular projection with mid-latitude correction.** — No library needed and no visible distortion at country scale this near the equator. — `build()` in `tools/build_pack.py`.
 - **Source GeoJSON is committed under `data/sources/`.** — Packs can be rebuilt offline and the exact input is on record (commit 9469f09 of geoBoundaries). — Delete and re-download from `source_url`.
+
+## Second round (2026-11-16)
+- **The falling piece is a bare silhouette and name: accent fill, dark outline, white halo, drop shadow.** — Asked for no box; it has to read over sea, land and every placed colour. — `.piece` rules in `css/style.css`.
+- **From level 3 a missed piece is not revealed; it goes to the back of the queue. It still costs a life.** — "Mistakes teach but not solve, at least not after level 2." — `revealThroughLevel` in `RULES`, and the `miss` branch of `tick` in `js/engine.js`.
+- **Capital is its own level (4th) and joins the mix afterwards, marked with ★.** — Keeps the name → shape ladder and adds one more rung. — `levelRules` and `mixClues` in `js/engine.js`.
+- **"Centroamérica · Países" is an ordinary pack with seven regions**, so capitals of countries use the same ladder. — No special mode to maintain. — Remove or edit its entry in `tools/packs.json`.
+- **Panama and Nicaragua packs include comarcas and autonomous regions.** — They are first-level units; leaving them out would put holes in the map. — Would need a "background, not playable" region type in the pack format.
+- **Names and capitals come from Wikidata, cleaned of "Departamento de" and similar.** — One source, in Spanish, for all seven countries, and the boundary files' own labels mix English and Spanish. — Replace the CSVs in `data/sources/`; cleaning rules are `clean_name` and `clean_capital` in `tools/build_pack.py`.
+- **Daily challenge: 10 pieces, 6 s each, clues mixed, no lives, always reveals, first attempt of the day is the one kept.** — A fixed length makes results comparable and gives a shareable row of squares. — `dailyPieces`, `dailyFallMs` in `RULES`; the keep-first rule is in `finish` in `js/app.js`.
+- **The day changes at the player's local midnight.** — Simplest, and right for players in one time zone. — `localDate` in `js/engine.js`; use a fixed UTC offset if players abroad should share the same day.
+- **Top scores: best 10 per map, free play only, three characters A–Z/0–9, stored on the device.** — "Public name" has nowhere to be public without a server, and hosting is off for now. — `topScores` in `RULES`; a shared table needs a backend and replaces `table()` and `submitInitials` in `js/app.js`.
+- **A tap within 14 px of the right region counts as right, even if it lands on a neighbour.** — No zoom, and several regions are narrower than a fingertip. It only ever helps the player. — `TAP_SLOP_PX` in `js/app.js` and `TAP_SLOP` in `tools/build_pack.py` (keep equal); set both to 0 to turn it off.
+- **Sound is synthesised in the browser; the tune plays on menus, not during play.** — No audio files to make or license, and nothing competing with the effects mid-game. — `js/sound.js`; the notes are `TUNE`.
+- **Share text omits the link when the game runs from localhost.** — The game is local-only for now and such a link is useless to the receiver. — `share` in `js/app.js`.
+- **Smaller name labels on maps with more regions (26, 20 or 16 map units).** — Fewer overlaps on crowded maps. — `labelSize` in `tools/build_pack.py`.

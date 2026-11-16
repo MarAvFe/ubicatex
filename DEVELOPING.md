@@ -7,9 +7,10 @@ Static site, no build step, no dependencies.
 | `index.html`, `css/style.css` | markup and styles; all player-facing text is Spanish |
 | `js/engine.js` | the rules: levels, scoring, lives. No DOM, no clock; time is fed in with `tick(ms)` |
 | `js/app.js` | screens, map drawing, input, frame loop |
+| `js/sound.js` | sound effects and menu tune, synthesised with Web Audio |
 | `js/selftest.js` | tests, including bots that play whole games |
 | `packs/*.json` | generated map packs; `packs/index.json` lists them for the home screen |
-| `tools/build_pack.py`, `tools/packs.json` | generates the packs from `data/sources/*.geojson` |
+| `tools/build_pack.py`, `tools/packs.json` | generates the packs and `docs/MAPS.md` from `data/sources/` |
 
 Keep rules in `engine.js` so the self-test can cover them without a browser clock.
 
@@ -29,19 +30,33 @@ point must lie inside its own region and no other, so a bad pack fails without a
 1. Save boundary GeoJSON under `data/sources/`. geoBoundaries has every country:
    `https://www.geoboundaries.org/api/current/gbOpen/<ISO3>/ADM1/` returns a `simplifiedGeometryGeoJSON` link
    (ADM1 = provinces or departments, ADM2 = cantones or municipalities). Note the licence it reports.
-2. Add an entry to `tools/packs.json`: id, title, subtitle, flag, source, the property holding the name and
-   the id, a prefix to strip from names, a `clip_bbox` (west, south, east, north) that leaves out far
-   islands, and the attribution line in Spanish.
-3. `python3 tools/build_pack.py` then `./selftest.sh`.
-4. Read the region names against an official source before publishing; the generator copies whatever the
-   data says.
+2. Names and capitals come from a CSV (`iso,itemLabel,capLabel`), not from the boundary file, whose labels
+   mix languages. `data/sources/wikidata-adm1.csv` covers Central America; it is the result of this
+   query at <https://query.wikidata.org/>, with other country prefixes for other regions:
+
+   ```sparql
+   SELECT ?iso ?itemLabel ?capLabel WHERE {
+     ?item wdt:P300 ?iso . FILTER(REGEX(?iso, "^(CR|GT|BZ|SV|HN|NI|PA)-"))
+     OPTIONAL { ?item wdt:P36 ?cap . }
+     SERVICE wikibase:label { bd:serviceParam wikibase:language "es". }
+   } ORDER BY ?iso
+   ```
+
+   Regions are matched to rows by ISO 3166-2 code, or by name when the boundary file has no code; the
+   build stops if any region finds no row.
+3. Add an entry to `tools/packs.json`: id, title, subtitle, flag, noun, sources, names file, ISO prefix,
+   an optional `clip_bbox` (west, south, east, north) that leaves out far islands, and the attribution
+   line in Spanish.
+4. `python3 tools/build_pack.py`, then `./selftest.sh`, then read the new row in `docs/MAPS.md`.
+5. Read the names and capitals against an official source before publishing; the generator copies
+   whatever the sources say.
 
 Not built yet, and needed for the planned maps:
 
 - **A subset of a file** (San José's cantones out of all ADM2 units): geoBoundaries ADM2 has no parent
   field, so the generator needs a "keep units whose label point is inside region X of pack Y" filter.
-- **Many small regions**: with around 20 or more, some are too small to tap on a phone. That needs zoom or
-  a magnified tap target; see `docs/SPEC.md`.
+- **Maps with regions too small to see.** Taps are forgiven by 14 px, which makes every current map
+  playable, but `docs/MAPS.md` lists regions a phone player can barely see. Cantones will be worse.
 
 ## Release
 

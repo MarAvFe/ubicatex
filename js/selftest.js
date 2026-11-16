@@ -1,6 +1,8 @@
 // Self-test: open index.html#selftest, or run ./selftest.sh. Runs on in-memory
 // storage, never on the player's saved records.
-import { createGame, levelRules, multiplier, seededRng, shareText, shuffle, RULES } from "./engine.js";
+import {
+  addScore, cleanInitials, createGame, dailySeed, levelRules, multiplier, rankFor, seededRng, shareText, shuffle, RULES,
+} from "./engine.js";
 import { createApp, loadJson } from "./app.js";
 import { memoryStore } from "./store.js";
 
@@ -89,21 +91,85 @@ const tests = {
     eq(first.lifeBack, false, "level 1 was not clean:");
     eq(second.lifeBack, true, "level 2 was clean:");
   },
-  "share text names the pack and the score"() {
-    const text = shareText({ flag: "🇨🇷", title: "Costa Rica", subtitle: "Provincias" }, { score: 1234, level: 3, bestStreak: 9 }, "https://example.org/");
-    ok(text.includes("Costa Rica") && text.includes("nivel 3") && text.endsWith("https://example.org/"), text);
+  "with capitals, a capital level follows the shape level, and mixed levels use all three clues"() {
+    eq(levelRules(4, true).clue, "capital");
+    eq(levelRules(4, false).clue, "mix");
+    eq(levelRules(5, true).clue, "mix");
+    const game = createGame(IDS, seededRng(8), { hasCapitals: true });
+    const log = play(game, (piece, s) => (s.level <= 6 ? piece.id : null));
+    const clues = (level) => new Set(log.filter((e) => e.type === "spawn").slice((level - 1) * 7, level * 7).map((e) => e.clue));
+    eq([...clues(4)].join(), "capital");
+    eq([...clues(5), ...clues(6)].filter((c, i, a) => a.indexOf(c) === i).sort().join(), "capital,name,shape");
   },
-  async "every pack loads, and every label point lies in its own region only"() {
+  "a miss shows the answer in levels 1 and 2 only; later the piece comes back and the region stays empty"() {
+    const game = createGame(IDS, seededRng(9));
+    let dropped = null;
+    const log = play(game, (piece, s) => {
+      if (s.level === 1 && s.lives === RULES.lives) return null;    // one miss in level 1
+      // one miss in level 3: let its first piece fall all the way (the clean level 2 restored the life)
+      if (s.level === 3 && (dropped === null || (piece.id === dropped && s.lives === RULES.lives))) { dropped = piece.id; return null; }
+      return s.level <= 3 ? piece.id : null;
+    }, 4000);
+    const misses = log.filter((e) => e.type === "miss");
+    eq(misses[0].reveal, true, "level 1 miss:");
+    eq(misses[1].reveal, false, "level 3 miss:");
+    eq(misses[1].id, dropped);
+    const level3 = log.slice(log.findIndex((e) => e.type === "level" && e.level === 3));
+    const end = level3.findIndex((e) => e.type === "levelclear");
+    const spawns = level3.slice(0, end).filter((e) => e.type === "spawn").map((e) => e.id);
+    eq(spawns.length, 8, "level 3 pieces (7 + the one that came back):");
+    eq(spawns.at(-1), dropped, "the dropped piece returns last:");
+    ok(level3.slice(0, end).some((e) => e.type === "correct" && e.id === dropped), "the returned piece was never placed");
+  },
+  "the daily challenge is ten pieces, the same for the same day, different the next, and has no lives"() {
+    const run = (date, decide) => {
+      const game = createGame(IDS, seededRng(dailySeed("x", date)), { daily: true, hasCapitals: true });
+      const log = play(game, decide);
+      return { game, order: log.filter((e) => e.type === "spawn").map((e) => e.id + e.clue).join() };
+    };
+    const a = run("2026-11-16", (p) => p.id), b = run("2026-11-16", (p) => p.id), c = run("2026-11-17", (p) => p.id);
+    eq(a.order, b.order);
+    ok(a.order !== c.order, "two days gave the same challenge");
+    eq(a.game.state.marks.join(""), "gggggggggg");
+    const idle = run("2026-11-16", () => null);
+    eq(idle.game.state.marks.join(""), "rrrrrrrrrr");
+    eq(idle.game.state.phase, "over");
+    eq(idle.game.state.lives, RULES.lives, "daily must not use lives:");
+    const ids = a.order.split(",").map((s) => s[0]);
+    ok(ids.every((id, i) => id !== ids[i + 1]), "same region twice in a row");
+  },
+  "the score table keeps the best ten in order, and initials are three clean characters"() {
+    let table = [];
+    for (const score of [50, 300, 100, 200, 10, 20, 30, 40, 60, 70, 80, 90]) table = addScore(table, { name: "AAA", score }).table;
+    eq(table.length, 10);
+    eq(table.map((r) => r.score).join(), "300,200,100,90,80,70,60,50,40,30");
+    eq(rankFor(table, 25), -1); eq(rankFor(table, 250), 1); eq(rankFor([], 0), -1);
+    eq(rankFor(table, 100), 3, "a tie ranks below the earlier score:");
+    eq(cleanInitials("mñ4x"), "MN4"); eq(cleanInitials("é"), "EAA"); eq(cleanInitials("  "), "AAA");
+  },
+  "share text names the pack and the score, and the daily one shows the grid"() {
+    const pack = { flag: "🇨🇷", title: "Costa Rica", subtitle: "Provincias" };
+    const text = shareText(pack, { score: 1234, level: 3, bestStreak: 9 }, "https://example.org/");
+    ok(text.includes("Costa Rica") && text.includes("nivel 3") && text.endsWith("https://example.org/"), text);
+    const daily = shareText(pack, { daily: true, date: "2026-11-16", score: 900, marks: ["g", "y", "r"] });
+    ok(daily.includes("🟩🟨🟥") && daily.includes("2026-11-16") && !daily.includes("http"), daily);
+  },
+  async "every pack loads, names are clean, and every label point lies in its own region only"() {
     const index = await loadJson("packs/index.json");
-    ok(index.packs.length >= 1, "no packs listed");
+    eq(index.packs.length, 8, "packs listed:");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     document.body.append(svg);
     try {
       for (const entry of index.packs) {
         const pack = await loadJson(`packs/${entry.id}.json`);
         eq(pack.id, entry.id);
-        ok(pack.regions.length >= 2, `${pack.id}: too few regions`);
+        eq(pack.regions.length, entry.count, `${pack.id} count:`);
         eq(new Set(pack.regions.map((r) => r.id)).size, pack.regions.length, `${pack.id} unique ids:`);
+        eq(new Set(pack.regions.map((r) => r.name)).size, pack.regions.length, `${pack.id} unique names:`);
+        for (const r of pack.regions) {
+          ok(!/^(departamento|provincia|distrito|comarca|regi)/i.test(r.name), `${pack.id}: name not cleaned: ${r.name}`);
+          ok(!pack.hasCapitals || (r.capital && !r.capital.includes("(")), `${pack.id}: bad capital for ${r.name}`);
+        }
         svg.setAttribute("viewBox", `0 0 ${pack.viewBox[0]} ${pack.viewBox[1]}`);
         const paths = pack.regions.map((r) => {
           const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -113,30 +179,38 @@ const tests = {
         });
         pack.regions.forEach((r, i) => {
           const pt = new DOMPoint(r.label[0], r.label[1]);
-          paths.forEach((p, j) => eq(p.isPointInFill(pt), i === j, `${pack.id}: label of ${r.name} in region ${pack.regions[j].name}:`));
+          ok(paths[i].isPointInFill(pt), `${pack.id}: label of ${r.name} is outside it`);
+          // Neighbouring countries come from different surveys and may overlap by a sliver;
+          // the label point must still belong to one region only.
+          paths.forEach((p, j) => ok(i === j || !p.isPointInFill(pt), `${pack.id}: label of ${r.name} is also inside ${pack.regions[j].name}`));
         });
         paths.forEach((p) => p.remove());
       }
     } finally { svg.remove(); }
   },
-  async "the Costa Rica pack has the seven provinces"() {
-    const pack = await loadJson("packs/cr-provincias.json");
-    eq(pack.regions.map((r) => r.name).join(), "Alajuela,Cartago,Guanacaste,Heredia,Limón,Puntarenas,San José");
+  async "region counts match what the sources hold"() {
+    const want = { "centroamerica-paises": 7, "cr-provincias": 7, "gt-departamentos": 22, "bz-distritos": 6,
+      "sv-departamentos": 14, "hn-departamentos": 18, "ni-departamentos": 17, "pa-provincias": 13 };
+    const index = await loadJson("packs/index.json");
+    for (const p of index.packs) eq(p.count, want[p.id], `${p.id}:`);
+    const cr = await loadJson("packs/cr-provincias.json");
+    eq(cr.regions.map((r) => r.name).join(), "Alajuela,Cartago,Guanacaste,Heredia,Limón,Puntarenas,San José");
+    eq(cr.regions.find((r) => r.name === "Guanacaste").capital, "Liberia");
   },
-  async "playing through the page: taps score, the game ends, the record is saved"() {
+  async "playing through the page: taps score, near-misses on small regions count, the game ends in the table"() {
     const store = memoryStore();
-    const app = createApp(document, store, seededRng(6));
+    const app = createApp(document, store, { rng: seededRng(6), today: () => "2026-11-16" });
+    const tapOn = (id) => document.querySelector(`#map path[data-id="${id}"]`)
+      .dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     try {
       await app.showHome();
-      ok(document.querySelector('#packs [data-pack="cr-provincias"]'), "home does not list the pack");
+      eq(document.querySelectorAll("#picker .chip").length, 8, "maps in the picker:");
       ok(document.getElementById("credits").textContent.includes("OpenStreetMap"), "home does not credit the map data");
       await app.start("cr-provincias");
       app.stopLoop(); // the test drives time itself
       app.step(16);
       const first = app.game.state.current.id;
       const wrong = app.pack.regions.find((r) => r.id !== first).id;
-      const tapOn = (id) => document.querySelector(`#map path[data-id="${id}"]`)
-        .dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
       tapOn(wrong);
       eq(app.game.state.score, 0, "wrong tap:");
       tapOn(first);
@@ -148,11 +222,46 @@ const tests = {
       app.setPaused(false);
       for (let i = 0; i < 5000 && app.game.state.phase !== "over"; i++) app.step(100);
       eq(document.getElementById("over").hidden, false, "game-over screen hidden:");
-      eq(store.load().best["cr-provincias"].score, app.game.state.score);
-    } finally {
+      eq(document.getElementById("entry").hidden, false, "initials form hidden:");
+      document.getElementById("initials").value = "mav";
+      await app.submitInitials();
+      eq(document.getElementById("scores").hidden, false, "score table hidden:");
+      eq(store.load().scores["cr-provincias"][0].name, "MAV");
+      eq(store.load().scores["cr-provincias"][0].score, app.game.state.score);
+      ok(document.querySelector("#scores-list li.new").textContent.includes("MAV"), "new row not highlighted");
+
+      // Tap forgiveness, on the smallest region of all: the Bay Islands of Honduras.
+      await app.start("hn-departamentos");
       app.stopLoop();
-      for (const id of ["home", "play", "over"]) document.getElementById(id).hidden = true;
-    }
+      for (let i = 0; i < 400 && app.game.state.current?.id !== "HN-IB"; i++) {
+        app.step(16);
+        if (app.game.state.current && app.game.state.current.id !== "HN-IB") app.tap(app.game.state.current.id);
+      }
+      eq(app.game.state.current?.id, "HN-IB", "could not reach the Bay Islands piece:");
+      const island = app.pack.regions.find((r) => r.id === "HN-IB");
+      const ctm = document.getElementById("map").getScreenCTM();
+      const at = new DOMPoint(island.label[0], island.label[1]).matrixTransform(ctm);
+      const sea = document.getElementById("map");
+      eq(app.regionAt(at.x, at.y - 9, sea), "HN-IB", "9 px off the island:");
+      ok(app.regionAt(at.x, at.y - 60, sea) !== "HN-IB", "60 px off the island still counted");
+    } finally { app.destroy(); }
+  },
+  async "the daily challenge on the page: played once, then only shown"() {
+    const store = memoryStore();
+    const app = createApp(document, store, { today: () => "2026-11-16" });
+    try {
+      await app.start("centroamerica-paises", "daily");
+      app.stopLoop();
+      for (let i = 0; i < 5000 && app.game.state.phase !== "over"; i++) {
+        app.step(100);
+        if (app.game.state.current) app.tap(app.game.state.current.id);
+      }
+      eq(store.load().daily["centroamerica-paises"].marks.join(""), "gggggggggg");
+      eq(document.getElementById("over-marks").textContent, "🟩".repeat(10));
+      eq(document.getElementById("entry").hidden, true, "daily must not ask for initials:");
+      await app.showHome();
+      eq(document.getElementById("play-daily").textContent, "Ver el reto de hoy");
+    } finally { app.destroy(); }
   },
 };
 
@@ -161,7 +270,7 @@ export async function runSelftest(out) {
   for (const [name, fn] of Object.entries(tests)) {
     try { await fn(); } catch (e) { failures.push(`${name}: ${e.message}`); }
   }
-  for (const id of ["home", "play", "over"]) document.getElementById(id).hidden = true;
+  for (const id of ["home", "play", "over", "scores"]) document.getElementById(id).hidden = true;
   out.hidden = false;
   out.className = failures.length ? "fail" : "pass";
   out.textContent = failures.length

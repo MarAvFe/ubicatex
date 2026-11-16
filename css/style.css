@@ -33,21 +33,34 @@ button.ghost { background: rgb(255 255 255 / .16); color: var(--paper); box-shad
 button:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
 /* ---- Home ---- */
-.logo { font-size: clamp(3rem, 14vw, 5.5rem); margin: 0; letter-spacing: -.03em; line-height: 1;
-  text-shadow: 0 5px 0 rgb(0 0 0 / .2); }
-.tagline { margin: 0; max-width: 24rem; font-size: 1.1rem; opacity: .95; }
-.packs { display: grid; gap: .75rem; width: min(100%, 26rem); }
-.pack {
-  display: flex; align-items: center; gap: .9rem; width: 100%; text-align: left;
-  background: var(--paper); border-radius: var(--radius); padding: .9rem 1rem;
+#home { justify-content: flex-start; padding-top: 0; gap: 0; }
+.picker {
+  align-self: stretch; display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: none;
+  margin: 0 -1.25rem; padding: max(.75rem, env(safe-area-inset-top)) 1.25rem .75rem;
+  background: rgb(0 0 0 / .18);
 }
-.pack .flag { font-size: 2rem; }
-.pack .names { flex: 1; display: grid; }
-.pack small { font-weight: 600; opacity: .65; }
-.pack .go { background: var(--accent); border-radius: 999px; padding: .4rem .9rem; }
-.how { list-style: none; padding: 0; margin: .5rem 0 0; max-width: 24rem; display: grid; gap: .4rem;
-  font-size: .95rem; opacity: .92; text-align: left; }
-.credits { font-size: .75rem; opacity: .6; margin: .5rem 0 0; }
+.picker::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; min-width: 0; padding: .5rem .9rem; font-size: .95rem; white-space: nowrap;
+  background: rgb(255 255 255 / .16); color: var(--paper); box-shadow: none;
+}
+.chip[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
+.home-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding-top: 1rem; }
+.logo { font-size: clamp(3rem, 14vw, 5rem); margin: 0; letter-spacing: -.03em; line-height: 1;
+  text-shadow: 0 5px 0 rgb(0 0 0 / .2); }
+.tagline { margin: 0; max-width: 24rem; font-size: 1.05rem; opacity: .95; }
+.card {
+  width: min(100%, 24rem); display: grid; justify-items: center; gap: .6rem;
+  background: rgb(255 255 255 / .12); border-radius: var(--radius); padding: 1.1rem;
+}
+.card h2 { margin: 0; font-size: 1.3rem; }
+.card p { margin: 0; opacity: .85; }
+.note { margin: 0; font-size: .9rem; opacity: .85; max-width: 22rem; }
+.note:empty { display: none; }
+button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
+.how { list-style: none; padding: 0; margin: 0; max-width: 24rem; display: grid; gap: .4rem;
+  font-size: .92rem; opacity: .92; text-align: left; }
+.credits { font-size: .72rem; opacity: .6; margin: 0; max-width: 28rem; }
 
 /* ---- Play ---- */
 .hud {
@@ -78,21 +91,31 @@ button:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 .region.wrong { animation: wrong .4s; }
 @keyframes wrong { 0%, 100% { fill: var(--land); } 30% { fill: #f4978e; } }
 .labels text {
-  font-size: 26px; font-weight: 800; fill: var(--ink); text-anchor: middle; dominant-baseline: central;
+  font-size: var(--label-size, 26px); font-weight: 800; fill: var(--ink); text-anchor: middle; dominant-baseline: central;
   paint-order: stroke; stroke: rgb(255 255 255 / .75); stroke-width: 6; stroke-linejoin: round;
   pointer-events: none; opacity: 0; transition: opacity .25s;
 }
 .labels text.shown { opacity: 1; }
 
+/* The falling piece has no box: a silhouette and a name that must read against sea,
+   land and placed colours alike. Hence fill + dark outline + white halo on both. */
 .piece {
-  position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: .5rem;
-  background: var(--paper); color: var(--ink); font-weight: 800; font-size: 1.15rem; white-space: nowrap;
-  padding: .5rem .9rem; border-radius: 14px; box-shadow: 0 6px 16px rgb(0 0 0 / .3);
+  position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: .1rem;
   pointer-events: none; /* taps go through to the map underneath */
   will-change: transform;
 }
-.piece svg { width: 3.2rem; height: 3.2rem; }
-.piece svg path { fill: var(--accent); stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.piece svg {
+  width: 6rem; height: 6rem; overflow: visible;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 6px 6px rgb(0 0 0 / .45));
+}
+.piece svg path { fill: var(--accent); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.piece span {
+  font-weight: 900; font-size: 1.7rem; white-space: nowrap; color: var(--accent);
+  -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill;
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+    drop-shadow(0 5px 5px rgb(0 0 0 / .45));
+}
 .piece.zap { transition: transform .4s cubic-bezier(.5, 0, .2, 1), opacity .4s; opacity: 0; }
 .piece.lost { transition: opacity .4s; opacity: .25; }
 
@@ -127,6 +150,31 @@ button:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 .results { display: flex; gap: 1.5rem; margin: 0 0 .5rem; }
 .results dt { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; opacity: .7; }
 .results dd { margin: 0; font-size: 1.6rem; font-weight: 800; }
+
+.marks { margin: 0; font-size: 1.6rem; letter-spacing: .1em; }
+.actions { display: grid; gap: .8rem; justify-items: center; }
+.entry { display: grid; gap: .7rem; justify-items: center; }
+.entry input {
+  width: 9.5rem; text-align: center; text-transform: uppercase; user-select: text; -webkit-user-select: text;
+  font: 900 3rem ui-monospace, "Courier New", monospace; letter-spacing: .25em; padding: .2rem 0 .2rem .25em;
+  color: #ffe66d; background: #111; border: 3px solid #ffe66d; border-radius: 8px; caret-color: #ffe66d;
+}
+
+/* ---- Top scores: an arcade cabinet's table ---- */
+.arcade {
+  align-items: center; justify-content: center; gap: .9rem; padding: 1.5rem 1rem; text-align: center;
+  background: #0b0b14; font-family: ui-monospace, "Courier New", monospace; text-transform: uppercase; letter-spacing: .08em;
+}
+.arcade h2 { margin: 0; font-size: clamp(1.4rem, 6vw, 2rem); color: #ff5d8f; text-shadow: 3px 3px 0 #5a189a; }
+.arcade p { margin: 0; color: #4cc9f0; }
+.arcade ol { list-style: none; margin: 0; padding: 0; width: min(100%, 22rem); display: grid; gap: .25rem; font-size: 1.15rem; font-weight: 700; }
+.arcade li { display: grid; grid-template-columns: 2.2rem 4rem 1fr 3rem; text-align: right; color: #ffe66d; }
+.arcade li span:nth-child(2) { text-align: center; color: #fff; }
+.arcade li:nth-child(n+4) { color: #9ef01a; }
+.arcade li.new { animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.arcade-note { font-size: .7rem; opacity: .6; }
+.arcade button { font-family: inherit; text-transform: uppercase; border-radius: 6px; }
 
 .notice { margin: 1rem; padding: 1rem; border-radius: var(--radius); background: var(--bad); }
 #selftest { margin: 1rem; padding: 1rem; border-radius: 8px; font-family: ui-monospace, monospace; white-space: pre-wrap; color: #111; background: #eee; user-select: text; }

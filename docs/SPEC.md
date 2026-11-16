@@ -13,23 +13,32 @@ adding the next map is a data task.
 - **Tap, don't drag.** The piece falls on its own; the player taps the place. Dragging a falling object is
   fiddly on a touch screen.
 - **Short rounds.** A game lasts a few minutes at most; the fall time is the timer, shown as a bar.
-- **Mistakes teach.** A missed piece shows where it belonged before the next one drops.
+- **Mistakes teach, they don't solve.** In levels 1 and 2 a missed piece shows where it belonged. From
+  level 3 the place stays empty and the piece comes back after the others.
+- **Clues scale.** Name and shape, name, shape, capital, then all mixed and faster. The countries map uses
+  the same ladder, so capitals of countries come for free.
 - **Reward speed and streaks, not grinding.** Points scale with how early the answer comes; first-try
-  streaks multiply. No accounts, no ads, no server; records stay on the device and results share as text.
-- **Maps are packs.** One JSON file per map, generated from open boundary data.
+  streaks multiply.
+- **One game a day that everyone shares.** The daily challenge is seeded by map and date: ten pieces, once,
+  with a result made to paste into a chat.
+- **Arcade, not account.** Top ten per map with three-letter names, on the device. No server.
+- **Maps are packs.** One JSON file per map, generated from open boundary data and Wikidata names.
+- **No zoom.** Small regions are handled by forgiving near taps, and each map gets a generated assessment
+  (`docs/MAPS.md`) of whether that is enough.
 
 ## Out of scope for now
 
-Capitals and other facts beyond names, sound, accounts or online leaderboards, zooming, installable PWA,
-languages other than Spanish.
+Hosting, accounts or online leaderboards, zooming, installable PWA, languages other than Spanish, recorded
+audio.
 
 ## Build order (each step leaves something playable)
 
 1. **Done:** Costa Rica provinces, levels, scoring, lives, records, share, self-test.
-2. San José cantones: subset filter in the generator, and small-region handling (zoom or magnified tap).
-3. Central America: one provinces/departments pack per country, a country picker on the home screen.
-4. Seeded daily challenge (the engine already takes a seeded generator) so everyone gets the same order.
-5. Hosting (Netlify or similar), then sound and polish from playtests.
+2. **Done:** the other six countries and the countries map, map picker, capitals, missed pieces that
+   return, daily challenge, arcade top scores, sound, tap assessment.
+3. Check names and capitals against official sources (needed before hosting).
+4. San José cantones: subset filter in the generator; decide what to do about regions too small to see.
+5. Hosting, when asked. A shared top-score table would need a server and is a separate decision.
 
 ## Assumptions register
 
@@ -39,5 +48,8 @@ languages other than Spanish.
 | A label point inside each region can be computed without a GIS library | **Holds**: self-test checks it per pack | `./selftest.sh` | add a dependency to the generator |
 | The straight north-south edge in south-east Limón is real, not a simplification artefact | **Holds**: present in the full-resolution file too; it is the border with Panama | compare simplified and full files | rebuild from the full-resolution file |
 | geoBoundaries ADM2 matches today's cantones of San José | **Untested**; its Costa Rica data represents 2017 and cantones have been created since | fetch CRI ADM2, compare the list with an official one | find a newer source (IGN/SNIT) |
-| geoBoundaries ADM1 exists with an open licence for the other six countries | **Untested** | fetch each API entry | per-country sources |
-| Tapping works with around 20 small regions on a phone | **Untested**, expected false without zoom | build the cantones pack and try it | step 2 covers it |
+| geoBoundaries ADM1 exists with an open licence for the other six countries | **Holds** (2026-11-16): all six fetched; licences are ODbL, CC BY-SA 2.0 (El Salvador) and CC BY 2.5 (Belize) | fetch each API entry | per-country sources |
+| Wikidata has a Spanish name and a capital for every unit, keyed by ISO 3166-2 | **Holds** for presence (all 97 units and 7 countries matched). **Correctness is unchecked**: nobody has compared the capitals with official lists | the build fails on any unmatched unit | hand-kept CSV |
+| The boundary data is current | **Known gap**: Panama's file represents 2017 and lacks the Naso Tjër Di comarca (created 2020), which shows as part of Bocas del Toro | compare unit lists with Wikidata's | newer source for Panama |
+| Country outlines from different surveys fit together | **Holds** well enough: seams are hidden by the border stroke at screen size (checked on screenshots) | look at the countries map | build the countries map by merging ADM1 units |
+| Tapping works with around 20 small regions on a phone | **Holds by calculation** with the 14 px tap forgiveness (`docs/MAPS.md`: every map `ok` or `tight`). **Not tried on a real phone.** Seeing the small regions is a separate, open problem | play Guatemala and Honduras on a phone | zoom, or an inset for crowded areas |

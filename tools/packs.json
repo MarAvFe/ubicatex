@@ -2,16 +2,160 @@
   "_comment": "One entry per map pack. Run tools/build_pack.py to regenerate packs/. See DEVELOPING.md.",
   "packs": [
     {
+      "id": "centroamerica-paises",
+      "title": "Centroamérica",
+      "subtitle": "Países",
+      "flag": "🌎",
+      "noun": "países",
+      "sources": [
+        {
+          "file": "data/sources/gtm-adm0.geojson",
+          "id": "GT"
+        },
+        {
+          "file": "data/sources/blz-adm0.geojson",
+          "id": "BZ"
+        },
+        {
+          "file": "data/sources/slv-adm0.geojson",
+          "id": "SV"
+        },
+        {
+          "file": "data/sources/hnd-adm0.geojson",
+          "id": "HN"
+        },
+        {
+          "file": "data/sources/nic-adm0.geojson",
+          "id": "NI"
+        },
+        {
+          "file": "data/sources/cri-adm0.geojson",
+          "id": "CR"
+        },
+        {
+          "file": "data/sources/pan-adm0.geojson",
+          "id": "PA"
+        }
+      ],
+      "names": "data/sources/wikidata-adm0.csv",
+      "iso_prefix": "",
+      "clip_bbox": [
+        -92.6,
+        6.9,
+        -77.0,
+        18.7
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+    },
+    {
       "id": "cr-provincias",
       "title": "Costa Rica",
       "subtitle": "Provincias",
       "flag": "🇨🇷",
-      "source": "data/sources/cri-adm1.geojson",
-      "source_url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/CRI/ADM1/geoBoundaries-CRI-ADM1_simplified.geojson",
-      "name_property": "shapeName",
-      "id_property": "shapeISO",
-      "strip_prefix": "Provincia ",
-      "clip_bbox": [-86.2, 8.0, -82.4, 11.4],
+      "noun": "provincias",
+      "sources": [
+        {
+          "file": "data/sources/cri-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "CR-",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "clip_bbox": [
+        -86.2,
+        8.0,
+        -82.4,
+        11.4
+      ]
+    },
+    {
+      "id": "gt-departamentos",
+      "title": "Guatemala",
+      "subtitle": "Departamentos",
+      "flag": "🇬🇹",
+      "noun": "departamentos",
+      "sources": [
+        {
+          "file": "data/sources/gtm-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "GT-",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+    },
+    {
+      "id": "bz-distritos",
+      "title": "Belice",
+      "subtitle": "Distritos",
+      "flag": "🇧🇿",
+      "noun": "distritos",
+      "sources": [
+        {
+          "file": "data/sources/blz-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "BZ-",
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5)"
+    },
+    {
+      "id": "sv-departamentos",
+      "title": "El Salvador",
+      "subtitle": "Departamentos",
+      "flag": "🇸🇻",
+      "noun": "departamentos",
+      "sources": [
+        {
+          "file": "data/sources/slv-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "SV-",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0)"
+    },
+    {
+      "id": "hn-departamentos",
+      "title": "Honduras",
+      "subtitle": "Departamentos",
+      "flag": "🇭🇳",
+      "noun": "departamentos",
+      "sources": [
+        {
+          "file": "data/sources/hnd-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "HN-",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+    },
+    {
+      "id": "ni-departamentos",
+      "title": "Nicaragua",
+      "subtitle": "Departamentos y regiones",
+      "flag": "🇳🇮",
+      "noun": "departamentos y regiones",
+      "sources": [
+        {
+          "file": "data/sources/nic-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "NI-",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+    },
+    {
+      "id": "pa-provincias",
+      "title": "Panamá",
+      "subtitle": "Provincias y comarcas",
+      "flag": "🇵🇦",
+      "noun": "provincias y comarcas",
+      "sources": [
+        {
+          "file": "data/sources/pan-adm1.geojson"
+        }
+      ],
+      "names": "data/sources/wikidata-adm1.csv",
+      "iso_prefix": "PA-",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
     }
   ]
