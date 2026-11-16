@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ubícate</title>
+<title>Ubicatex</title>
 <meta name="description" content="Un juego de geografía: continentes, océanos, países y provincias caen y hay que tocar su lugar en el mapa antes de que lleguen al suelo.">
 <meta name="theme-color" content="#0f4c5c">
 <link rel="stylesheet" href="css/style.css">
@@ -11,25 +11,35 @@
 <body>
 
 <main id="home" class="screen">
-  <nav id="picker" class="picker" aria-label="Mapas"></nav>
   <div class="home-body">
-    <h1 class="logo">Ubícate</h1>
+    <h1 class="logo">Ubicatex</h1>
     <p class="tagline">Las piezas caen. Toque su lugar en el mapa antes de que lleguen al suelo.</p>
     <section class="card">
-      <h2 id="pack-title"></h2>
+      <div class="pick">
+        <select id="pack-select" aria-label="Elegir mapa"></select>
+      </div>
       <p id="pack-sub"></p>
       <button id="play-free" type="button">Jugar</button>
       <button id="show-map" class="ghost" type="button">Mapa</button>
       <button id="show-scores" class="ghost" type="button">Mejores puntajes</button>
     </section>
-    <ul class="how">
-      <li><b>Rápido</b> vale más: cada pieza da más puntos mientras más alta esté.</li>
-      <li><b>Racha</b>: tres aciertos seguidos al primer intento suben el multiplicador.</li>
-      <li><b>Tres vidas</b>: se pierde una cuando una pieza toca el suelo.</li>
-      <li><b>El mapa no se llena</b>: sus aciertos se ven al terminar cada nivel.</li>
-    </ul>
+    <div class="folds">
+      <details>
+        <summary>Cómo jugar</summary>
+        <ul class="how">
+          <li><b>Rápido</b> vale más: cada pieza da más puntos mientras más alta esté.</li>
+          <li><b>Racha</b>: tres aciertos seguidos al primer intento suben el multiplicador.</li>
+          <li><b>Tres vidas</b>: se pierde una cuando una pieza toca el suelo.</li>
+          <li><b>Repaso</b>: al terminar cada nivel puede ver el mapa antes de seguir.</li>
+          <li><b>Mapa</b>: muestra todo el mapa con sus nombres, para estudiar.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Fuentes</summary>
+        <p id="credits" class="credits"></p>
+      </details>
+    </div>
     <button id="mute" class="ghost small" type="button"></button>
-    <p id="credits" class="credits"></p>
   </div>
 </main>
 

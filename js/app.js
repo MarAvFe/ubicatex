@@ -31,7 +31,9 @@ export function createApp(doc, store, opts = {}) {
   const $ = (id) => doc.getElementById(id);
   const saved = { scores: {}, initials: "", muted: false, lastPack: null, ...(store.load() ?? {}) };
   const save = () => store.save(saved);
-  const sound = (opts.makeSound ?? silentSound)(() => saved.muted);
+  // Sound is decoration: a failure in it must never stop the game, as one once did.
+  const sound = Object.fromEntries(Object.entries((opts.makeSound ?? silentSound)(() => saved.muted))
+    .map(([name, fn]) => [name, (...args) => { try { fn(...args); } catch (err) { console.warn("sound", name, err); } }]));
   const listeners = new AbortController(); // lets the self-test remove every handler
   const on = (target, type, fn) => target.addEventListener(type, fn, { signal: listeners.signal });
 
@@ -40,7 +42,7 @@ export function createApp(doc, store, opts = {}) {
   let game = null;
   let paused = false;
   let frame = 0;
-  let pieceX = 0.5;
+  let piece = { left: 0, w: 0, h: 0, scale: 1 }; // the falling piece's layout on the stage
   let bannerMs = 0;
   let lastResult = null;
 
@@ -57,22 +59,24 @@ export function createApp(doc, store, opts = {}) {
     stopLoop();
     index ??= await loadJson("packs/index.json");
     const chosen = index.packs.find((p) => p.id === saved.lastPack) ?? index.packs[0];
-    const nav = $("picker");
-    nav.replaceChildren();
+    // A native dropdown with groups: it scales to any number of maps and phones
+    // already know how to use it.
+    const select = $("pack-select");
+    select.replaceChildren();
+    const groups = new Map();
     for (const p of index.packs) {
-      const btn = doc.createElement("button");
-      btn.type = "button";
-      btn.className = "chip";
-      btn.dataset.pack = p.id;
-      btn.textContent = `${p.flag} ${p.chip}`;
-      btn.setAttribute("aria-pressed", String(p.id === chosen.id));
-      on(btn, "click", () => { sound.tap(); saved.lastPack = p.id; save(); showHome(); });
-      nav.append(btn);
+      if (!groups.has(p.group)) {
+        const g = doc.createElement("optgroup");
+        g.label = p.group;
+        groups.set(p.group, g);
+        select.append(g);
+      }
+      const opt = doc.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.flag} ${p.chip}`;
+      groups.get(p.group).append(opt);
     }
-    // Centre the chosen chip by scrolling the strip only (scrollIntoView also scrolls the page).
-    const current = nav.querySelector('[aria-pressed="true"]');
-    if (current) nav.scrollLeft = current.offsetLeft - (nav.clientWidth - current.offsetWidth) / 2;
-    $("pack-title").textContent = `${chosen.flag} ${chosen.title} · ${chosen.subtitle}`;
+    select.value = chosen.id;
     const best = table(chosen.id)[0];
     $("pack-sub").textContent = `${chosen.count} ${chosen.noun}` + (best ? ` · récord ${fmt(best.score)} (${best.name})` : "");
     $("play-free").onclick = () => start(chosen.id);
@@ -154,8 +158,7 @@ export function createApp(doc, store, opts = {}) {
     }
   }
 
-  // A short colour pulse that leaves the map as it was: the map does not fill up
-  // during a level, so the player cannot tell what is left by looking.
+  // A short colour pulse that leaves the region as it was (a wrong tap).
   function flash(el, cls) {
     if (!el) return;
     el.classList.remove(cls);
@@ -215,19 +218,27 @@ export function createApp(doc, store, opts = {}) {
       name.textContent = piece.clue === "capital" ? `★ ${region.capital}` : region.name;
       el.append(name);
     }
-    // Keep the piece inside the stage: 25%..75% of the width.
-    pieceX = 0.25 + Math.random() * 0.5;
     el.classList.remove("zap", "lost");
     el.style.transition = "none";
     el.hidden = false;
+    // Fit the piece to the stage: shrink it if it is wider (a long sea name on a phone),
+    // and keep its whole width on screen wherever it falls.
+    const stageW = $("stage").clientWidth;
+    const margin = 8;
+    piece.w = el.offsetWidth;
+    piece.h = el.offsetHeight;
+    piece.scale = Math.min(1, (stageW - 2 * margin) / piece.w);
+    const half = (piece.w * piece.scale) / 2;
+    const wanted = stageW * (0.25 + Math.random() * 0.5);
+    piece.left = Math.min(Math.max(wanted, half + margin), stageW - half - margin);
     movePiece(0);
   }
 
   function movePiece(frac) {
     const stage = $("stage");
     const el = $("piece");
-    const y = frac * Math.max(0, stage.clientHeight - el.offsetHeight);
-    el.style.transform = `translate(${pieceX * stage.clientWidth}px, ${y}px) translateX(-50%)`;
+    const y = frac * Math.max(0, stage.clientHeight - piece.h * piece.scale);
+    el.style.transform = `translate(${piece.left - (piece.w * piece.scale) / 2}px, ${y}px) scale(${piece.scale})`;
     $("timer").style.transform = `scaleX(${1 - frac})`;
     // The bar warns before the piece lands.
     $("timer").classList.toggle("low", frac > 0.7);
@@ -236,9 +247,10 @@ export function createApp(doc, store, opts = {}) {
   function zapPiece(region) {
     const el = $("piece");
     const p = stagePoint(region);
+    const s = 0.2 * piece.scale;
     el.style.transition = "";
     el.classList.add("zap");
-    el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%) scale(0.2)`;
+    el.style.transform = `translate(${p.x - (piece.w * s) / 2}px, ${p.y - (piece.h * s) / 2}px) scale(${s})`;
   }
 
   function floatText(at, text, cls) {
@@ -294,7 +306,7 @@ export function createApp(doc, store, opts = {}) {
     startLoop();
   }
 
-  // End of a level (or of the game): only what was placed gets its colour and name,
+  // End of a level (or of the game): a learning pause. The map shows what was placed,
   // and nothing moves until the player has looked and pressed the button.
   function showReview(e, gameOver) {
     for (const id of e.placed) {
@@ -322,13 +334,14 @@ export function createApp(doc, store, opts = {}) {
       const region = e.id && pack.regions.find((r) => r.id === e.id);
       if (e.type === "level") {
         clearMap();
-        banner(`Nivel ${e.level}`, CLUE_HINT[levelRules(e.level, pack.hasCapitals).clue]);
+        banner(`Nivel ${e.level}`, CLUE_HINT[levelRules(e.level, pack.hasCapitals).clue], RULES.levelIntroMs);
       } else if (e.type === "spawn") {
         // A shown answer stays only until the next piece appears.
         for (const el of $("map").querySelectorAll(".reveal, .peek")) el.classList.remove("reveal", "peek");
         drawPiece(e);
       } else if (e.type === "correct") {
-        flash(regionEl(e.id), "good");
+        regionEl(e.id).classList.add("placed");
+        labelEl(e.id).classList.add("shown");
         zapPiece(region);
         floatText(stagePoint(region), `+${fmt(e.points)}${e.mult > 1 ? ` ×${e.mult}` : ""}`, "good");
         sound.good(e.mult);
@@ -491,6 +504,7 @@ export function createApp(doc, store, opts = {}) {
   // ---- Wiring ----
 
   on(doc, "pointerdown", () => sound.unlock());
+  on($("pack-select"), "change", (ev) => { sound.tap(); saved.lastPack = ev.target.value; save(); showHome(); });
   on($("map"), "pointerdown", (ev) => tap(regionAt(ev.clientX, ev.clientY, ev.target)));
   on($("learn-map"), "pointerdown", (ev) => learnTap(ev.target.closest?.("path[data-id]")?.dataset.id));
   on($("learn-back"), "click", () => showHome());

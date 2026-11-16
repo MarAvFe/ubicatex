@@ -1,4 +1,4 @@
-# Ubícate (zip-zap-map-cr)
+# Ubicatex
 
 **A geography game in Spanish for the browser: continents, oceans, seas, countries and provinces fall from the
 top of the screen and you tap where each one belongs on the map before it lands.**
@@ -16,7 +16,7 @@ top of the screen and you tap where each one belongs on the map before it lands.
 Then open <http://localhost:8000/>. It is a static site with no build step, so any static host works too.
 
 **On a phone on the same Wi-Fi:** once, in Windows, run `tools\lan-open.ps1` as administrator (it prints
-the address to open, such as `http://192.168.100.99:8000/`). Run it again after restarting the PC.
+the address to open, such as `http://192.168.1.20:8000/`). Run it again after restarting the PC.
 `tools\lan-close.ps1` undoes it. Only devices on your home network can connect.
 
 | Do | Key | Action |
@@ -26,13 +26,13 @@ the address to open, such as `http://192.168.100.99:8000/`). Run it again after 
 
 ## How it plays
 
-- From the home screen: **Jugar**, **Mapa** (the whole map coloured and named, to study; tap a region for
-  its name, and its capital on country maps) and **Mejores puntajes**.
+- On the home screen, pick a map from the list, then **Jugar**, **Mapa** (the whole map coloured and named,
+  to study; tap a region for its name, and its capital on country maps) or **Mejores puntajes**. The rules
+  and the data sources are behind **Cómo jugar** and **Fuentes**.
 - Each level is one pass through every region: name and shape, then name only, shape only, capital only
   (★, country maps only), then everything mixed and faster.
-- **The map does not fill up while you play.** A right answer flashes and the map goes back to white, so
-  you cannot tell what is left by looking. At the end of each level the map shows your right answers in
-  colour, and the game waits for **Siguiente**.
+- Each right answer fills in its region. At the end of each level the game waits for **Siguiente**, so
+  you can look at the map before moving on.
 - A faster answer scores more. Three first-try answers in a row raise the multiplier, up to ×5.
 - Three lives. A piece that reaches the ground costs one; a level with no mistakes gives one back.
 - In levels 1 and 2 a missed piece shows where it belonged. From level 3 it falls again later instead.

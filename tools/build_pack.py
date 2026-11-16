@@ -25,7 +25,7 @@ Each source in a pack entry turns features into regions:
                 French Guiana into America)
   fill_holes    GeoJSON of land: holes in a polygon with no land in them are filled
                 (Natural Earth's North Atlantic has a hole where the Sargasso Sea is)
-Pack fields beyond the obvious: capitals (true: add a capital level), projection (equirect, laea, equalearth), sphere (draw
+Pack fields beyond the obvious: group (heading in the map dropdown), capitals (true: add a capital level), projection (equirect, laea, equalearth), sphere (draw
 the globe outline as this background kind), min_step, theme ("sea" for water maps).
 Several features with the same key become one region (a continent, an ocean).
 """
@@ -488,6 +488,7 @@ def main():
         path = ROOT / "packs" / f"{cfg['id']}.json"
         path.write_text(json.dumps(pack, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         index.append({k: pack[k] for k in ("id", "title", "subtitle", "chip", "flag", "noun", "attribution")}
+                     | {"group": cfg["group"]}
                      | {"count": len(pack["regions"])})
         t = pack["tap"]
         report.append(f"| {pack['title']} · {pack['subtitle']} | {len(pack['regions'])} | {t['smallest']} | {t['px']} | "

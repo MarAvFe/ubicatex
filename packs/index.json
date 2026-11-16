@@ -8,6 +8,7 @@
       "flag": "🌍",
       "noun": "continentes",
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Mundo",
       "count": 6
     },
     {
@@ -18,16 +19,18 @@
       "flag": "🌊",
       "noun": "océanos",
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Mundo",
       "count": 5
     },
     {
       "id": "mundo-mares",
       "title": "Mundo",
       "subtitle": "Mares y golfos",
-      "chip": "Mares",
+      "chip": "Mares y golfos",
       "flag": "⚓",
       "noun": "mares y golfos",
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Mundo",
       "count": 22
     },
     {
@@ -38,6 +41,7 @@
       "flag": "🌎",
       "noun": "países y territorios",
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "group": "América",
       "count": 4
     },
     {
@@ -48,6 +52,7 @@
       "flag": "🌎",
       "noun": "países",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "group": "América",
       "count": 7
     },
     {
@@ -58,6 +63,7 @@
       "flag": "🌎",
       "noun": "países y territorios",
       "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "group": "América",
       "count": 13
     },
     {
@@ -68,6 +74,7 @@
       "flag": "🇨🇷",
       "noun": "provincias",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 7
     },
     {
@@ -78,6 +85,7 @@
       "flag": "🇬🇹",
       "noun": "departamentos",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 22
     },
     {
@@ -88,6 +96,7 @@
       "flag": "🇧🇿",
       "noun": "distritos",
       "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 6
     },
     {
@@ -98,6 +107,7 @@
       "flag": "🇸🇻",
       "noun": "departamentos",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 14
     },
     {
@@ -108,6 +118,7 @@
       "flag": "🇭🇳",
       "noun": "departamentos",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 18
     },
     {
@@ -118,6 +129,7 @@
       "flag": "🇳🇮",
       "noun": "departamentos y regiones",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 17
     },
     {
@@ -128,6 +140,7 @@
       "flag": "🇵🇦",
       "noun": "provincias y comarcas",
       "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "group": "Provincias de Centroamérica",
       "count": 13
     }
   ]

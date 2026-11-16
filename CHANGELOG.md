@@ -28,9 +28,11 @@ All notable changes to this project are documented here. The format follows
 - A hint to turn the phone sideways on world maps.
 
 ### Changed
-- The game is now called Ubícate.
-- The map stays white during a level; right answers only flash.
-- Home menu is Jugar, Mapa, Mejores puntajes. The daily challenge is hidden.
+- The game is now called Ubicatex.
+- Home menu is a map dropdown and Jugar, Mapa, Mejores puntajes; rules and sources are folded away. The
+  daily challenge is hidden.
+- A level's title shows before its first piece falls.
+- Falling pieces shrink to fit narrow screens and stay inside them.
 - Capitals are only played on the country maps.
 - Numbers are written 1,130 instead of 1 130.
 - The falling piece is a bare outlined silhouette and name, without a box.
@@ -39,5 +41,8 @@ All notable changes to this project are documented here. The format follows
 - Map names keep the same size on screen on every map.
 
 ### Fixed
+- The game froze when the streak multiplier reached ×5 (on Continentes: no "Siguiente" after level 2).
+- The pause screen showed the rotate hint over its buttons.
+- On small phones with the rules open, the top of the home screen could not be reached.
 - The daily challenge no longer repeats regions on maps with fewer than ten: three extra pieces used to fall
   onto places already filled in.

@@ -44,3 +44,18 @@ No clarifying questions were asked; the assumptions taken are in `docs/DECISIONS
   > also, drop the daily challenge mode, i don't like it. or hide it. instead, the main menu has Play, Map and Scores. The Map option shows that map fully completed for users to read and learn. also after finishing a level, there is a "Next" confirmation button that allows the player to see his answers before moving on. these learning pauses are important.
   >
   > I don't like mapazo. think of another name.
+- 2026-11-16 —
+  > hmm.. the harder vrsion of map not populating was only for daily challenge, roll that back, map shoul d populate afffter each correct option.
+  >
+  > also name is good but change it to: "Ubicatex"
+  >
+  > sometimes, falling options on phone, are too close to the side and get out of screen, like pacific ocean.
+  >
+  > also men buttons have some text overlap, address that.
+  >
+  > after playing continents round 2, no "next" prompt shows and the screen freezes, only the pause button works to leave. this is a bug.
+  >
+  > on may screen, hide the rules behind a "how to play" button. also the sources behind a "sources" button.
+  >
+  > also map selection process should be some kind of dropdown because sideways scrolling does not scale.
+- 2026-11-16 — "when you're done, push here: https://github.com/MarAvFe/ubicatex"

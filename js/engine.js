@@ -2,7 +2,7 @@
 // so the self-test can play whole games instantly and deterministically.
 
 // The player-facing name, in one place (index.html repeats it for the page title).
-export const GAME_NAME = "Ubícate";
+export const GAME_NAME = "Ubicatex";
 
 export const RULES = {
   lives: 3,
@@ -19,7 +19,8 @@ export const RULES = {
   // Pauses give the player time to see what happened before the next piece.
   pauseAfterCorrectMs: 550,
   pauseAfterMissMs: 1600, // longer: the right answer is being shown
-  pauseAfterLevelMs: 900, // after "Siguiente", before the next level's first piece
+  pauseAfterLevelMs: 400, // after "Siguiente", before the level's title appears
+  levelIntroMs: 1300, // the level's title shows alone; the first piece falls after it
   // Daily challenge: the same short game for everyone on a given day. Maps with fewer
   // regions play each one once instead; repeating one would drop a piece onto a place
   // already filled in.
@@ -113,7 +114,11 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
   }
 
   function spawn(events) {
-    if (s.queue.length === 0) startLevel(events);
+    if (s.queue.length === 0) {
+      startLevel(events);
+      s.pauseMs = RULES.levelIntroMs;
+      return;
+    }
     const rules = daily ? { fallMs: RULES.dailyFallMs, clue: "mix" } : levelRules(s.level, hasCapitals);
     const choices = mixClues(hasCapitals);
     const clue = rules.clue === "mix" ? choices[Math.floor(rng() * choices.length)] : rules.clue;

@@ -22,7 +22,7 @@ export function createSound(isMuted) {
   }
 
   function note(freq, { at = 0, dur = 0.12, type = "triangle", gain = 0.12, slideTo = null } = {}) {
-    if (!ctx || isMuted()) return;
+    if (!ctx || isMuted() || !Number.isFinite(freq)) return;
     const t = ctx.currentTime + at;
     const osc = ctx.createOscillator();
     const amp = ctx.createGain();
@@ -55,8 +55,14 @@ export function createSound(isMuted) {
     unlock,
     music,
     tap: () => note(880, { dur: 0.04, type: "square", gain: 0.03 }),
-    // The chime climbs with the multiplier, so a streak can be heard building.
-    good: (mult = 1) => { const i = Math.min(mult - 1, 4); note(SCALE[i + 2], { dur: 0.1 }); note(SCALE[i + 4], { at: 0.08, dur: 0.16 }); },
+    // The chime climbs with the multiplier, so a streak can be heard building. The top
+    // note is SCALE[i + 4], so i stops at SCALE.length - 5: at ×5 it used to read past
+    // the end of the scale, throw, and freeze the game (2026-11-16).
+    good: (mult = 1) => {
+      const i = Math.max(0, Math.min(mult - 1, SCALE.length - 5));
+      note(SCALE[i + 2], { dur: 0.1 });
+      note(SCALE[i + 4], { at: 0.08, dur: 0.16 });
+    },
     bad: () => note(150, { dur: 0.18, type: "sawtooth", gain: 0.06 }),
     miss: () => note(330, { dur: 0.4, slideTo: 110, gain: 0.1 }),
     levelUp: () => [0, 2, 4, 7].forEach((n, i) => note(SCALE[n], { at: i * 0.09, dur: 0.18 })),

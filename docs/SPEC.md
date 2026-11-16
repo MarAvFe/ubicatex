@@ -19,8 +19,8 @@ adding the next map is a data task.
   the same ladder, so capitals of countries come for free.
 - **Reward speed and streaks, not grinding.** Points scale with how early the answer comes; first-try
   streaks multiply.
-- **The map stays white during a level.** You cannot eliminate by looking; at the end of the level your
-  right answers colour in and the game waits for you. Learning pauses come before speed.
+- **Learning pauses come before speed.** At the end of each level the game waits for "Siguiente" with
+  the map in view, and the title of the next level shows before its first piece falls.
 - **Study before you play.** Every map has a "Mapa" view with everything named.
 - **Arcade, not account.** Top ten per map with three-letter names, on the device. No server.
 - **Maps are packs.** One JSON file per map, generated from open boundary data and Wikidata names.

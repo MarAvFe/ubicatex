@@ -66,3 +66,14 @@ Format: reading taken — reason — how to change.
 - **Capitals only on the country maps** (Centroamérica, Norteamérica, Sudamérica). — Their capitals were checked against a second source; province capitals were not. — `"capitals": true` per pack in `tools/packs.json`.
 - **Numbers as 1,130.** — es-CR formatting puts a space inside the number. — `num` in `js/engine.js`.
 - **Phone access through a Windows port proxy and a firewall rule limited to the local subnet**, set up by `tools/lan-open.ps1` (admin) and removed by `tools/lan-close.ps1`. Nothing is forwarded on the router. — WSL runs behind its own network address, the network is marked Public, and "keep it local" rules out exposing it to the internet. — Run `lan-close.ps1`.
+
+## Fifth round (2026-11-16)
+- **Name: "Ubicatex"**, as asked. Supersedes "Ubícate". — `GAME_NAME` in `js/engine.js`, `<title>` and `.logo` in `index.html`.
+- **The map fills in again after each right answer; the white map is reverted.** It was meant for the daily challenge only, which is hidden. The end-of-level review with "Siguiente" stays. — Asked for. — The `correct` branch of `handle` in `js/app.js`.
+- **Bug fixed: the game froze when the streak multiplier reached ×5.** The chime for a right answer read a note past the end of its scale and threw; the error also skipped the rest of that answer's events, so on Continentes, where ×5 lands on the last piece of level 2, "Siguiente" never appeared. — The index is clamped (`good` in `js/sound.js`), and every sound call is now wrapped so a sound error can never stop the game (`createApp`). Two regression tests.
+- **A level's title shows alone for 1.3 s before its first piece falls.** — The title banner covered the first piece. — `levelIntroMs` in `RULES`.
+- **A falling piece is shrunk to fit the screen and kept inside it.** — Wide pieces (Pacífico, long sea names) went off the edge on phones. — `drawPiece` in `js/app.js`.
+- **Menu buttons fill their card's width and may wrap; the pause screen hides the rotate hint and the map completely.** — The hint was drawn over the pause buttons. — `.card button`, `.overlay` in `css/style.css`.
+- **Maps are chosen from a native dropdown grouped Mundo / América / Provincias de Centroamérica**, replacing the sideways chips. — Chips do not scale with more maps; phones have a good built-in picker. — `group` per pack in `tools/packs.json`; `showHome` in `js/app.js`.
+- **Rules and sources sit behind "Cómo jugar" and "Fuentes" on the home screen**, closed by default. — Asked for. — The `<details>` blocks in `index.html`.
+- **Pushed to github.com/MarAvFe/ubicatex, which is public.** — You created it and asked for the push. The README's example LAN address was replaced with a placeholder first. — Make it private in the repository settings.

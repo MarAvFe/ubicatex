@@ -5,6 +5,7 @@ import {
 } from "./engine.js";
 import { createApp, loadJson } from "./app.js";
 import { memoryStore } from "./store.js";
+import { createSound, silentSound } from "./sound.js";
 
 const IDS = ["a", "b", "c", "d", "e", "f", "g"];
 
@@ -29,6 +30,15 @@ function play(game, decide, maxSteps = 200000) {
 }
 
 const tests = {
+  "a level's first piece waits until the level's title has shown"() {
+    const game = createGame(IDS, seededRng(15));
+    const events = game.tick(50);
+    eq(events.map((e) => e.type).join(), "level");
+    eq(game.state.current, null);
+    let waited = 0;
+    while (!game.state.current) { game.tick(50); waited += 50; }
+    ok(waited >= RULES.levelIntroMs, `first piece after ${waited} ms`);
+  },
   "levels get harder and never faster than the floor"() {
     eq(levelRules(1).clue, "both");
     eq(levelRules(2).clue, "name");
@@ -63,8 +73,9 @@ const tests = {
     eq(log.at(-1).type, "over");
   },
   "a fast answer beats a slow one"() {
-    const fast = createGame(IDS, seededRng(3)); fast.tick(0);
-    const slow = createGame(IDS, seededRng(3)); slow.tick(0); slow.tick(8000);
+    const firstPiece = (g) => { while (!g.state.current) g.tick(50); return g; };
+    const fast = firstPiece(createGame(IDS, seededRng(3)));
+    const slow = firstPiece(createGame(IDS, seededRng(3))); slow.tick(8000);
     eq(fast.answer(fast.state.current.id)[0].points, 200);
     ok(slow.answer(slow.state.current.id)[0].points < 120, "slow answer scored too much");
   },
@@ -249,18 +260,19 @@ const tests = {
       .dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     try {
       await app.showHome();
-      eq(document.querySelectorAll("#picker .chip").length, 13, "maps in the picker:");
+      eq(document.querySelectorAll("#pack-select option").length, 13, "maps in the dropdown:");
+      eq([...document.querySelectorAll("#pack-select optgroup")].map((g) => g.label).join(), "Mundo,América,Provincias de Centroamérica");
       ok(document.getElementById("credits").textContent.includes("OpenStreetMap"), "home does not credit the map data");
       await app.start("cr-provincias");
       app.stopLoop(); // the test drives time itself
-      app.step(16);
+      while (!app.game.state.current) app.step(50); // the level's title shows first
       const first = app.game.state.current.id;
       const wrong = app.pack.regions.find((r) => r.id !== first).id;
       tapOn(wrong);
       eq(app.game.state.score, 0, "wrong tap:");
       tapOn(first);
       ok(app.game.state.score > 0, "correct tap did not score");
-      eq(document.querySelectorAll("#map .placed").length, 0, "the map filled in during the level:");
+      eq([...document.querySelectorAll("#map .placed")].map((p) => p.dataset.id).join(), first, "the right answer is not filled in:");
       app.setPaused(true);
       app.step(60000);
       eq(app.game.state.lives, RULES.lives, "time ran while paused:");
@@ -351,6 +363,54 @@ const tests = {
       eq(document.getElementById("learn-info").textContent, "Guanacaste", "province maps show no capital:");
     } finally { app.destroy(); }
   },
+  "sound never throws, at any multiplier"() {
+    // Regression: at ×5 the chime read past the end of its scale and threw, which froze
+    // the game at the end of the continents' second level.
+    const s = createSound(() => false);
+    s.unlock();
+    for (let m = 0; m <= 12; m++) s.good(m);
+    s.bad(); s.miss(); s.levelUp(); s.over(); s.record(); s.tap();
+    s.music(true); s.music(false);
+  },
+  async "a failing sound cannot stop a level from ending"() {
+    const broken = () => Object.fromEntries(Object.keys(silentSound()).map((k) => [k, () => { throw new Error("no audio"); }]));
+    const app = createApp(document, memoryStore(), { rng: seededRng(13), makeSound: broken });
+    try {
+      await app.start("mundo-continentes");
+      app.stopLoop();
+      for (let i = 0; i < 3000 && app.game.state.phase !== "review"; i++) {
+        app.step(50);
+        if (app.game.state.current) app.tap(app.game.state.current.id);
+      }
+      eq(document.getElementById("review").hidden, false, "no Siguiente after a sound error:");
+    } finally { app.destroy(); }
+  },
+  async "a falling piece always fits on a narrow phone screen"() {
+    const play = document.getElementById("play");
+    play.style.width = "340px"; // a small phone
+    const app = createApp(document, memoryStore(), { rng: seededRng(14) });
+    try {
+      for (const id of ["mundo-mares", "mundo-oceanos"]) {
+        await app.start(id);
+        app.stopLoop();
+        const stage = document.getElementById("stage").getBoundingClientRect();
+        let checked = 0;
+        for (let i = 0; i < 6000 && checked < 12; i++) {
+          if (app.game.state.phase === "review") document.getElementById("review-next").click();
+          app.step(50);
+          const p = app.game.state.current;
+          if (p && p.elapsed === 50) {
+            const r = document.getElementById("piece").getBoundingClientRect();
+            ok(r.left >= stage.left - 0.5 && r.right <= stage.right + 0.5,
+              `${id}: piece ${p.id} (${p.clue}) spans ${Math.round(r.left)}..${Math.round(r.right)}, stage ${Math.round(stage.left)}..${Math.round(stage.right)}`);
+            checked++;
+            app.tap(p.id);
+          }
+        }
+        ok(checked >= 5, `${id}: only ${checked} pieces checked`);
+      }
+    } finally { app.destroy(); play.style.width = ""; }
+  },
   async "the home menu offers Jugar, Mapa and Mejores puntajes, and no daily challenge"() {
     const app = createApp(document, memoryStore());
     try {
@@ -358,6 +418,14 @@ const tests = {
       const labels = [...document.querySelectorAll("#home .card button")].map((b) => b.textContent);
       eq(labels.join(), "Jugar,Mapa,Mejores puntajes");
       eq(document.getElementById("play-daily"), null, "daily button still in the page:");
+      eq([...document.querySelectorAll("#home summary")].map((s) => s.textContent).join(), "Cómo jugar,Fuentes");
+      ok(document.querySelectorAll("#home details[open]").length === 0, "rules or sources open by default");
+      const select = document.getElementById("pack-select");
+      select.value = "sudamerica-paises";
+      select.dispatchEvent(new Event("change"));
+      await new Promise((r) => setTimeout(r, 50));
+      eq(document.getElementById("pack-select").value, "sudamerica-paises", "the choice did not stick:");
+      ok(document.getElementById("pack-sub").textContent.startsWith("13 países"), document.getElementById("pack-sub").textContent);
     } finally { app.destroy(); }
   },
 };

@@ -18,8 +18,10 @@ body {
 [hidden] { display: none !important; }
 
 .screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* "safe": when the content is taller than the screen (rules open on a small phone),
+   start at the top instead of pushing the logo out of reach. */
 #home, #over {
-  align-items: center; justify-content: center; gap: 1rem; text-align: center;
+  align-items: center; justify-content: center; justify-content: safe center; gap: 1rem; text-align: center;
   padding: max(1.5rem, env(safe-area-inset-top)) 1.25rem max(1.5rem, env(safe-area-inset-bottom));
 }
 
@@ -33,34 +35,40 @@ button.ghost { background: rgb(255 255 255 / .16); color: var(--paper); box-shad
 button:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 
 /* ---- Home ---- */
-#home { justify-content: flex-start; padding-top: 0; gap: 0; }
-.picker {
-  align-self: stretch; display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: none;
-  margin: 0 -1.25rem; padding: max(.75rem, env(safe-area-inset-top)) 1.25rem .75rem;
-  background: rgb(0 0 0 / .18);
-}
-.picker::-webkit-scrollbar { display: none; }
-.chip {
-  flex: none; min-width: 0; padding: .5rem .9rem; font-size: .95rem; white-space: nowrap;
-  background: rgb(255 255 255 / .16); color: var(--paper); box-shadow: none;
-}
-.chip[aria-pressed="true"] { background: var(--paper); color: var(--ink); }
-.home-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding-top: 1rem; }
-.logo { font-size: clamp(3rem, 14vw, 5rem); margin: 0; letter-spacing: -.03em; line-height: 1;
+.home-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; width: 100%; }
+.logo { font-size: clamp(2.8rem, 13vw, 5rem); margin: 0; letter-spacing: -.03em; line-height: 1;
   text-shadow: 0 5px 0 rgb(0 0 0 / .2); }
 .tagline { margin: 0; max-width: 24rem; font-size: 1.05rem; opacity: .95; }
 .card {
-  width: min(100%, 24rem); display: grid; justify-items: center; gap: .6rem;
+  width: min(100%, 24rem); display: grid; gap: .7rem;
   background: rgb(255 255 255 / .12); border-radius: var(--radius); padding: 1.1rem;
 }
-.card h2 { margin: 0; font-size: 1.3rem; }
-.card p { margin: 0; opacity: .85; }
+.card p { margin: 0; opacity: .85; text-align: center; }
+/* Buttons in the menus fill the card instead of using a fixed minimum width, so a long
+   label or a large phone text setting wraps inside the button instead of spilling out. */
+.card button, .actions button, .overlay button, .review button { width: 100%; min-width: 0; line-height: 1.2; }
+.overlay button { width: min(86%, 20rem); }
+.pick { position: relative; }
+.pick::after { content: "▾"; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--ink); pointer-events: none; }
+.pick select {
+  width: 100%; appearance: none; -webkit-appearance: none; font: inherit; font-weight: 800; font-size: 1.1rem;
+  color: var(--ink); background: var(--paper); border: 0; border-radius: 12px; padding: .8rem 2.4rem .8rem 1rem;
+}
+.pick select:focus-visible { outline: 3px solid var(--accent); }
+.folds { width: min(100%, 24rem); display: grid; gap: .5rem; }
+.folds summary {
+  list-style: none; cursor: pointer; text-align: center; font-weight: 800; padding: .55rem 1rem;
+  border-radius: 999px; background: rgb(255 255 255 / .16);
+}
+.folds summary::-webkit-details-marker { display: none; }
+.folds summary::after { content: " ▾"; }
+.folds details[open] summary::after { content: " ▴"; }
+.folds details > :not(summary) { margin: .6rem .25rem 0; }
 .note { margin: 0; font-size: .9rem; opacity: .85; max-width: 22rem; }
 .note:empty { display: none; }
 button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
-.how { list-style: none; padding: 0; margin: 0; max-width: 24rem; display: grid; gap: .4rem;
-  font-size: .92rem; opacity: .92; text-align: left; }
-.credits { font-size: .72rem; opacity: .6; margin: 0; max-width: 28rem; }
+.how { list-style: none; padding: 0; display: grid; gap: .4rem; font-size: .92rem; opacity: .92; text-align: left; }
+.credits { font-size: .8rem; opacity: .75; text-align: left; }
 
 /* ---- Play ---- */
 .hud {
@@ -84,7 +92,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
   .stage.wide::after {
     content: "↻ Gire el teléfono para ver el mapa más grande";
     position: absolute; left: 0; right: 0; bottom: 36%; text-align: center; font-size: .9rem; opacity: .75;
-    pointer-events: none;
+    pointer-events: none; z-index: 0;
   }
 }
 #map { position: absolute; inset: 0; width: 100%; height: 100%; padding: .75rem; }
@@ -128,6 +136,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 .piece {
   position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: .1rem;
   pointer-events: none; /* taps go through to the map underneath */
+  transform-origin: 0 0; /* app.js positions and scales it from its top-left corner */
   will-change: transform;
 }
 .piece svg {
@@ -155,6 +164,8 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 @keyframes rise { to { transform: translate(-50%, -220%); opacity: 0; } }
 
 .banner {
+  /* max-content: an absolutely placed box at left: 50% would otherwise shrink to half the stage */
+  width: max-content; max-width: 90%;
   position: absolute; left: 50%; top: 28%; transform: translate(-50%, -50%);
   display: grid; gap: .15rem; text-align: center; pointer-events: none;
   background: rgb(18 48 58 / .88); padding: .8rem 1.6rem; border-radius: var(--radius);
@@ -164,6 +175,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 
 /* End-of-level review: at the top of the stage, where pieces fall, so the map stays visible. */
 .review {
+  z-index: 5;
   position: absolute; left: 50%; top: 1rem; transform: translateX(-50%); width: min(92%, 22rem);
   display: grid; gap: .35rem; justify-items: center; text-align: center;
   background: rgb(18 48 58 / .92); padding: .9rem 1rem 1rem; border-radius: var(--radius);
@@ -181,8 +193,9 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 #learn-map { position: absolute; inset: 0; width: 100%; height: 100%; padding: .75rem; }
 
 .overlay {
+  z-index: 10; /* above the rotate hint and the level banner */
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .9rem; background: rgb(15 76 92 / .96); /* opaque enough to hide the map: no studying while paused */
+  gap: .9rem; background: rgb(15 76 92); /* opaque: no studying the map while paused */
 }
 .overlay h2 { font-size: 2.2rem; margin: 0; }
 
@@ -196,7 +209,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 .results dd { margin: 0; font-size: 1.6rem; font-weight: 800; }
 
 .marks { margin: 0; font-size: 1.6rem; letter-spacing: .1em; }
-.actions { display: grid; gap: .8rem; justify-items: center; }
+.actions { display: grid; gap: .8rem; width: min(100%, 20rem); }
 .entry { display: grid; gap: .7rem; justify-items: center; }
 .entry input {
   width: 9.5rem; text-align: center; text-transform: uppercase; user-select: text; -webkit-user-select: text;
@@ -206,7 +219,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 
 /* ---- Top scores: an arcade cabinet's table ---- */
 .arcade {
-  align-items: center; justify-content: center; gap: .9rem; padding: 1.5rem 1rem; text-align: center;
+  align-items: center; justify-content: center; justify-content: safe center; gap: .9rem; padding: 1.5rem 1rem; text-align: center;
   background: #0b0b14; font-family: ui-monospace, "Courier New", monospace; text-transform: uppercase; letter-spacing: .08em;
 }
 .arcade h2 { margin: 0; font-size: clamp(1.4rem, 6vw, 2rem); color: #ff5d8f; text-shadow: 3px 3px 0 #5a189a; }
