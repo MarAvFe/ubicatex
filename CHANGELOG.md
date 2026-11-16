@@ -19,7 +19,17 @@ All notable changes to this project are documented here. The format follows
 - Sound effects and a menu tune, with a mute button.
 - `docs/MAPS.md`: a generated assessment of how tappable each map is on a phone.
 
+- Maps of the world by continent (America as one), oceans, and seas and gulfs; North and South America by
+  country.
+- Neighbouring land drawn as grey context on every map.
+- A hint to turn the phone sideways on world maps.
+
 ### Changed
 - The falling piece is a bare outlined silhouette and name, without a box.
 - From level 3 a missed piece is no longer revealed; it falls again later.
-- A tap within 14 px of the right region counts as right.
+- A tap within 14 px of the right region counts as right, measured exactly.
+- Map names keep the same size on screen on every map.
+
+### Fixed
+- The daily challenge no longer repeats regions on maps with fewer than ten: three extra pieces used to fall
+  onto places already filled in.

@@ -17,7 +17,9 @@ export const RULES = {
   pauseAfterCorrectMs: 550,
   pauseAfterMissMs: 1600, // longer: the right answer is being shown
   pauseAfterLevelMs: 1800,
-  // Daily challenge: the same short game for everyone on a given day.
+  // Daily challenge: the same short game for everyone on a given day. Maps with fewer
+  // regions play each one once instead; repeating one would drop a piece onto a place
+  // already filled in.
   dailyPieces: 10,
   dailyFallMs: 6000,
   topScores: 10,
@@ -89,7 +91,7 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
     streak: 0,
     bestStreak: 0,
     correct: 0,
-    total: daily ? RULES.dailyPieces : null,
+    total: daily ? Math.min(RULES.dailyPieces, regionIds.length) : null,
     queue: [],
     current: null, // { id, clue, fallMs, elapsed, wrongTries }
     placed: [],
@@ -102,17 +104,8 @@ export function createGame(regionIds, rng = Math.random, opts = {}) {
     s.level += 1;
     s.placed = [];
     s.levelClean = true;
-    if (daily) {
-      // Small maps repeat regions to fill the ten pieces; never the same one twice in a row.
-      while (s.queue.length < RULES.dailyPieces) {
-        const more = shuffle(regionIds, rng);
-        if (more[0] === s.queue.at(-1) && more.length > 1) more.push(more.shift());
-        s.queue.push(...more);
-      }
-      s.queue.length = RULES.dailyPieces;
-    } else {
-      s.queue = shuffle(regionIds, rng);
-    }
+    s.queue = shuffle(regionIds, rng);
+    if (daily) s.queue.length = s.total;
     events.push({ type: "level", level: s.level });
   }
 

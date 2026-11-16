@@ -5,8 +5,8 @@ Project facts the code can't show. Keep it short; no code snippets or build orde
 ## What it is for
 
 "Mapazo": a Spanish-language browser game for learning where places are. Pieces fall, the player taps their
-place on the map. Maps so far: Central America by country and the first-level divisions of its seven
-countries. Planned next: San José's cantones. Players are the general public on phones first
+place on the map. Maps so far: the world (continents, oceans, seas), the Americas by country, and the
+first-level divisions of the seven Central American countries. Planned next: San José's cantones. Players are the general public on phones first
 (not the young-child audience: it has reading, timers and a fail state). Success: someone opens the link on
 a phone, understands it without instructions, and plays a second round.
 

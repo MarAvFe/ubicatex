@@ -1,75 +1,133 @@
 {
   "packs": [
     {
+      "id": "mundo-continentes",
+      "title": "Mundo",
+      "subtitle": "Continentes",
+      "chip": "Continentes",
+      "flag": "🌍",
+      "noun": "continentes",
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "count": 6
+    },
+    {
+      "id": "mundo-oceanos",
+      "title": "Mundo",
+      "subtitle": "Océanos",
+      "chip": "Océanos",
+      "flag": "🌊",
+      "noun": "océanos",
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "count": 5
+    },
+    {
+      "id": "mundo-mares",
+      "title": "Mundo",
+      "subtitle": "Mares y golfos",
+      "chip": "Mares",
+      "flag": "⚓",
+      "noun": "mares y golfos",
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "count": 22
+    },
+    {
+      "id": "norteamerica-paises",
+      "title": "Norteamérica",
+      "subtitle": "Países y territorios",
+      "chip": "Norteamérica",
+      "flag": "🌎",
+      "noun": "países y territorios",
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "count": 4
+    },
+    {
       "id": "centroamerica-paises",
       "title": "Centroamérica",
       "subtitle": "Países",
+      "chip": "Centroamérica",
       "flag": "🌎",
       "noun": "países",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
       "count": 7
+    },
+    {
+      "id": "sudamerica-paises",
+      "title": "Sudamérica",
+      "subtitle": "Países y territorios",
+      "chip": "Sudamérica",
+      "flag": "🌎",
+      "noun": "países y territorios",
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "count": 13
     },
     {
       "id": "cr-provincias",
       "title": "Costa Rica",
       "subtitle": "Provincias",
+      "chip": "Costa Rica",
       "flag": "🇨🇷",
       "noun": "provincias",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
       "count": 7
     },
     {
       "id": "gt-departamentos",
       "title": "Guatemala",
       "subtitle": "Departamentos",
+      "chip": "Guatemala",
       "flag": "🇬🇹",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
       "count": 22
     },
     {
       "id": "bz-distritos",
       "title": "Belice",
       "subtitle": "Distritos",
+      "chip": "Belice",
       "flag": "🇧🇿",
       "noun": "distritos",
-      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5)",
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público)",
       "count": 6
     },
     {
       "id": "sv-departamentos",
       "title": "El Salvador",
       "subtitle": "Departamentos",
+      "chip": "El Salvador",
       "flag": "🇸🇻",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público)",
       "count": 14
     },
     {
       "id": "hn-departamentos",
       "title": "Honduras",
       "subtitle": "Departamentos",
+      "chip": "Honduras",
       "flag": "🇭🇳",
       "noun": "departamentos",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
       "count": 18
     },
     {
       "id": "ni-departamentos",
       "title": "Nicaragua",
       "subtitle": "Departamentos y regiones",
+      "chip": "Nicaragua",
       "flag": "🇳🇮",
       "noun": "departamentos y regiones",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
       "count": 17
     },
     {
       "id": "pa-provincias",
       "title": "Panamá",
       "subtitle": "Provincias y comarcas",
+      "chip": "Panamá",
       "flag": "🇵🇦",
       "noun": "provincias y comarcas",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)",
       "count": 13
     }
   ]

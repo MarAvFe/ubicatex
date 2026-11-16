@@ -28,3 +28,7 @@ No clarifying questions were asked; the assumptions taken are in `docs/DECISIONS
   > we can add some basic sound on taps and good/wrong choices, light menu music. no accounts, no zooming; maybe a map can get some asessment if boundaries per size would require zoom because i guess some maps could face a challenge though.
   >
   > i like the seeding concept to make this as wordly though. don't host, keep it local yet.
+- 2026-11-16 —
+  > there was a bug in daily challenge: after the map was completed, 3 more options fell, over already resolved places. why would it?
+  >
+  > also, this is awesome! add north america and south america as well as a world-view with the 6 continents (America is 1). also add an oceans and seas mode.

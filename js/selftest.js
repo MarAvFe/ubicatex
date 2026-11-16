@@ -121,22 +121,32 @@ const tests = {
     eq(spawns.at(-1), dropped, "the dropped piece returns last:");
     ok(level3.slice(0, end).some((e) => e.type === "correct" && e.id === dropped), "the returned piece was never placed");
   },
-  "the daily challenge is ten pieces, the same for the same day, different the next, and has no lives"() {
-    const run = (date, decide) => {
-      const game = createGame(IDS, seededRng(dailySeed("x", date)), { daily: true, hasCapitals: true });
+  "the daily challenge is the same for the same day, different the next, and has no lives"() {
+    const BIG = Array.from({ length: 22 }, (_, i) => `r${i}`);
+    const run = (ids, date, decide) => {
+      const game = createGame(ids, seededRng(dailySeed("x", date)), { daily: true, hasCapitals: true });
       const log = play(game, decide);
-      return { game, order: log.filter((e) => e.type === "spawn").map((e) => e.id + e.clue).join() };
+      return { game, spawns: log.filter((e) => e.type === "spawn"), order: log.filter((e) => e.type === "spawn").map((e) => e.id + e.clue).join() };
     };
-    const a = run("2026-11-16", (p) => p.id), b = run("2026-11-16", (p) => p.id), c = run("2026-11-17", (p) => p.id);
+    const a = run(BIG, "2026-11-16", (p) => p.id), b = run(BIG, "2026-11-16", (p) => p.id), c = run(BIG, "2026-11-17", (p) => p.id);
     eq(a.order, b.order);
     ok(a.order !== c.order, "two days gave the same challenge");
-    eq(a.game.state.marks.join(""), "gggggggggg");
-    const idle = run("2026-11-16", () => null);
-    eq(idle.game.state.marks.join(""), "rrrrrrrrrr");
+    eq(a.game.state.marks.join(""), "g".repeat(RULES.dailyPieces), "a big map plays ten:");
+    const idle = run(BIG, "2026-11-16", () => null);
+    eq(idle.game.state.marks.join(""), "r".repeat(RULES.dailyPieces));
     eq(idle.game.state.phase, "over");
     eq(idle.game.state.lives, RULES.lives, "daily must not use lives:");
-    const ids = a.order.split(",").map((s) => s[0]);
-    ok(ids.every((id, i) => id !== ids[i + 1]), "same region twice in a row");
+  },
+  "a daily on a map with fewer than ten regions plays each region exactly once"() {
+    // Regression: seven-region maps used to be padded to ten, so three pieces fell
+    // onto places that were already filled in.
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const game = createGame(IDS, seededRng(seed), { daily: true });
+      const spawns = play(game, (p) => p.id).filter((e) => e.type === "spawn").map((e) => e.id);
+      eq(spawns.length, IDS.length, `seed ${seed} pieces:`);
+      eq(new Set(spawns).size, IDS.length, `seed ${seed} repeats a region:`);
+      eq(game.state.total, IDS.length);
+    }
   },
   "the score table keeps the best ten in order, and initials are three clean characters"() {
     let table = [];
@@ -156,7 +166,7 @@ const tests = {
   },
   async "every pack loads, names are clean, and every label point lies in its own region only"() {
     const index = await loadJson("packs/index.json");
-    eq(index.packs.length, 8, "packs listed:");
+    eq(index.packs.length, 13, "packs listed:");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     document.body.append(svg);
     try {
@@ -189,13 +199,24 @@ const tests = {
     } finally { svg.remove(); }
   },
   async "region counts match what the sources hold"() {
-    const want = { "centroamerica-paises": 7, "cr-provincias": 7, "gt-departamentos": 22, "bz-distritos": 6,
+    const want = { "mundo-continentes": 6, "mundo-oceanos": 5, "mundo-mares": 22, "norteamerica-paises": 4,
+      "sudamerica-paises": 13, "centroamerica-paises": 7, "cr-provincias": 7, "gt-departamentos": 22, "bz-distritos": 6,
       "sv-departamentos": 14, "hn-departamentos": 18, "ni-departamentos": 17, "pa-provincias": 13 };
     const index = await loadJson("packs/index.json");
     for (const p of index.packs) eq(p.count, want[p.id], `${p.id}:`);
     const cr = await loadJson("packs/cr-provincias.json");
     eq(cr.regions.map((r) => r.name).join(), "Alajuela,Cartago,Guanacaste,Heredia,Limón,Puntarenas,San José");
     eq(cr.regions.find((r) => r.name === "Guanacaste").capital, "Liberia");
+    const world = await loadJson("packs/mundo-continentes.json");
+    eq(world.regions.map((r) => r.name).join(), "América,Antártida,Asia,Europa,Oceanía,África");
+    eq(world.hasCapitals, false, "continents have no capitals:");
+    const oceans = await loadJson("packs/mundo-oceanos.json");
+    eq(oceans.regions.map((r) => r.name).join(), "Atlántico,Austral,Pacífico,Ártico,Índico");
+    const south = await loadJson("packs/sudamerica-paises.json");
+    eq(south.regions.find((r) => r.name === "Bolivia").capital, "La Paz / Sucre");
+    ok(south.regions.some((r) => r.name === "Guayana Francesa"), "French Guiana missing");
+    const north = await loadJson("packs/norteamerica-paises.json");
+    eq(north.regions.map((r) => r.name).join(), "Canadá,Estados Unidos,Groenlandia,México");
   },
   async "playing through the page: taps score, near-misses on small regions count, the game ends in the table"() {
     const store = memoryStore();
@@ -204,7 +225,7 @@ const tests = {
       .dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
     try {
       await app.showHome();
-      eq(document.querySelectorAll("#picker .chip").length, 8, "maps in the picker:");
+      eq(document.querySelectorAll("#picker .chip").length, 13, "maps in the picker:");
       ok(document.getElementById("credits").textContent.includes("OpenStreetMap"), "home does not credit the map data");
       await app.start("cr-provincias");
       app.stopLoop(); // the test drives time itself
@@ -246,6 +267,19 @@ const tests = {
       ok(app.regionAt(at.x, at.y - 60, sea) !== "HN-IB", "60 px off the island still counted");
     } finally { app.destroy(); }
   },
+  async "background land and water are drawn but never count as a tap"() {
+    const app = createApp(document, memoryStore(), { rng: seededRng(3) });
+    try {
+      await app.start("mundo-oceanos");
+      app.stopLoop();
+      app.step(16);
+      const bg = document.querySelectorAll("#map path.bg");
+      ok(bg.length >= 2, "background layers not drawn");
+      eq(getComputedStyle(bg[0]).pointerEvents, "none");
+      eq(app.regionAt(-9999, -9999, bg[bg.length - 1]), null, "a tap on land picked a region:");
+      ok(document.getElementById("map").classList.contains("sea"), "ocean map without the sea theme");
+    } finally { app.destroy(); }
+  },
   async "the daily challenge on the page: played once, then only shown"() {
     const store = memoryStore();
     const app = createApp(document, store, { today: () => "2026-11-16" });
@@ -256,8 +290,8 @@ const tests = {
         app.step(100);
         if (app.game.state.current) app.tap(app.game.state.current.id);
       }
-      eq(store.load().daily["centroamerica-paises"].marks.join(""), "gggggggggg");
-      eq(document.getElementById("over-marks").textContent, "🟩".repeat(10));
+      eq(store.load().daily["centroamerica-paises"].marks.join(""), "ggggggg", "one piece per country:");
+      eq(document.getElementById("over-marks").textContent, "🟩".repeat(7));
       eq(document.getElementById("entry").hidden, true, "daily must not ask for initials:");
       await app.showHome();
       eq(document.getElementById("play-daily").textContent, "Ver el reto de hoy");

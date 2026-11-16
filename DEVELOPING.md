@@ -10,7 +10,8 @@ Static site, no build step, no dependencies.
 | `js/sound.js` | sound effects and menu tune, synthesised with Web Audio |
 | `js/selftest.js` | tests, including bots that play whole games |
 | `packs/*.json` | generated map packs; `packs/index.json` lists them for the home screen |
-| `tools/build_pack.py`, `tools/packs.json` | generates the packs and `docs/MAPS.md` from `data/sources/` |
+| `tools/build_pack.py`, `tools/packs.json` | generates the packs and `docs/MAPS.md` from `data/sources/` (about 30 s) |
+| `tools/fetch_sources.py` | re-downloads and trims the Natural Earth files in `data/sources/` |
 
 Keep rules in `engine.js` so the self-test can cover them without a browser clock.
 
@@ -27,7 +28,8 @@ point must lie inside its own region and no other, so a bad pack fails without a
 
 ## Adding a map
 
-1. Save boundary GeoJSON under `data/sources/`. geoBoundaries has every country:
+1. Save boundary GeoJSON under `data/sources/`. For countries, continents, oceans and seas the Natural Earth
+   files already there are enough (`tools/fetch_sources.py`). For provinces, geoBoundaries has every country:
    `https://www.geoboundaries.org/api/current/gbOpen/<ISO3>/ADM1/` returns a `simplifiedGeometryGeoJSON` link
    (ADM1 = provinces or departments, ADM2 = cantones or municipalities). Note the licence it reports.
 2. Names and capitals come from a CSV (`iso,itemLabel,capLabel`), not from the boundary file, whose labels
@@ -44,9 +46,12 @@ point must lie inside its own region and no other, so a bad pack fails without a
 
    Regions are matched to rows by ISO 3166-2 code, or by name when the boundary file has no code; the
    build stops if any region finds no row.
-3. Add an entry to `tools/packs.json`: id, title, subtitle, flag, noun, sources, names file, ISO prefix,
-   an optional `clip_bbox` (west, south, east, north) that leaves out far islands, and the attribution
-   line in Spanish.
+   `data/sources/wikidata-adm0.csv` (countries, by ISO alpha-2) and `wikidata-world.csv` (continents,
+   oceans and seas, by Wikidata id) come from similar queries.
+3. Add an entry to `tools/packs.json`. The fields are documented at the top of `tools/build_pack.py`;
+   the existing entries cover the common cases: one file of provinces, several country files, countries
+   filtered from a world file, features merged into a region (continents, oceans), neighbouring land as
+   background, and a projection (`equirect` for a country, `laea` for a continent, `equalearth` for the world).
 4. `python3 tools/build_pack.py`, then `./selftest.sh`, then read the new row in `docs/MAPS.md`.
 5. Read the names and capitals against an official source before publishing; the generator copies
    whatever the sources say.

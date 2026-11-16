@@ -80,11 +80,32 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
 #timer.low { background: var(--bad); }
 
 .stage { flex: 1; position: relative; min-height: 0; overflow: hidden; }
+@media (orientation: portrait) and (max-width: 700px) {
+  .stage.wide::after {
+    content: "↻ Gire el teléfono para ver el mapa más grande";
+    position: absolute; left: 0; right: 0; bottom: 36%; text-align: center; font-size: .9rem; opacity: .75;
+    pointer-events: none;
+  }
+}
 #map { position: absolute; inset: 0; width: 100%; height: 100%; padding: .75rem; }
+/* Stroke painted under the fill: a region made of several countries (a continent) or
+   seas (an ocean) shows only its outer edge, because each part's fill covers the
+   borders it shares with the others. Half the width is hidden, hence 5. */
 .region {
-  fill: var(--land); stroke: var(--sea); stroke-width: 2.5; stroke-linejoin: round;
+  fill: var(--land); stroke: var(--sea); stroke-width: 5; stroke-linejoin: round; paint-order: stroke fill;
   cursor: pointer; transition: fill .25s;
 }
+.bg { pointer-events: none; stroke: none; }
+.bg-sphere { fill: rgb(255 255 255 / .1); }
+.bg-water { fill: rgb(255 255 255 / .16); }
+/* Water that is not a target but must not look like a hole: same colour as the targets. */
+.bg-openwater { fill: #d6eef2; }
+.bg-land { fill: #c9c2a8; opacity: .55; }
+/* Oceans and seas: water is what gets tapped, so land steps back. */
+.sea .region { fill: #d6eef2; stroke: #0b3d4a; }
+.sea .bg-land { fill: #e8dfc6; opacity: 1; }
+.sea .region.placed { fill: var(--fill); }
+.sea .region.reveal { fill: var(--bad); }
 @media (hover: hover) { .region:hover { fill: #fff; } }
 .region.placed { fill: var(--fill); }
 .region.reveal { fill: var(--bad); }
@@ -109,7 +130,7 @@ button.small { min-width: 0; padding: .45rem 1rem; font-size: .85rem; }
   filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
     drop-shadow(0 6px 6px rgb(0 0 0 / .45));
 }
-.piece svg path { fill: var(--accent); stroke: var(--ink); stroke-width: 3; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.piece svg path { fill: var(--accent); stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; paint-order: stroke fill; vector-effect: non-scaling-stroke; }
 .piece span {
   font-weight: 900; font-size: 1.7rem; white-space: nowrap; color: var(--accent);
   -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill;

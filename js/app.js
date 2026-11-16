@@ -69,7 +69,7 @@ export function createApp(doc, store, opts = {}) {
       btn.type = "button";
       btn.className = "chip";
       btn.dataset.pack = p.id;
-      btn.textContent = `${p.flag} ${p.title}`;
+      btn.textContent = `${p.flag} ${p.chip}`;
       btn.setAttribute("aria-pressed", String(p.id === chosen.id));
       on(btn, "click", () => { sound.tap(); saved.lastPack = p.id; save(); showHome(); });
       nav.append(btn);
@@ -114,8 +114,17 @@ export function createApp(doc, store, opts = {}) {
   function drawMap() {
     const svg = $("map");
     svg.setAttribute("viewBox", `0 0 ${pack.viewBox[0]} ${pack.viewBox[1]}`);
-    svg.style.setProperty("--label-size", `${pack.labelSize}px`);
+    svg.setAttribute("class", pack.theme === "sea" ? "sea" : "land");
+    // World maps are twice as wide as tall: on a phone held upright they are a strip.
+    $("stage").classList.toggle("wide", pack.viewBox[0] / pack.viewBox[1] > 1.6);
     svg.replaceChildren();
+    // Neighbouring land, open water and the globe outline: context, never tappable.
+    for (const bg of pack.background ?? []) {
+      const path = doc.createElementNS(SVG, "path");
+      path.setAttribute("d", bg.d);
+      path.setAttribute("class", `bg bg-${bg.kind}`);
+      svg.append(path);
+    }
     const labels = doc.createElementNS(SVG, "g");
     labels.setAttribute("class", "labels");
     pack.regions.forEach((r, i) => {
@@ -133,6 +142,17 @@ export function createApp(doc, store, opts = {}) {
       labels.append(text);
     });
     svg.append(labels); // after the paths so names are never covered
+    sizeLabels();
+  }
+
+  // Names keep the same size on screen whatever the map's scale: readable on a world
+  // map, not huge on a single country.
+  function sizeLabels() {
+    const svg = $("map");
+    const ctm = svg.getScreenCTM?.();
+    if (!ctm || !ctm.a) return;
+    const px = doc.defaultView.innerWidth < 600 ? 12 : 16;
+    svg.style.setProperty("--label-size", `${(px / ctm.a).toFixed(2)}px`);
   }
 
   const regionEl = (id) => $("map").querySelector(`path[data-id="${id}"]`);
@@ -164,13 +184,13 @@ export function createApp(doc, store, opts = {}) {
     const p = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
     const reach = TAP_SLOP_PX / ctm.a;
     const path = regionEl(wanted);
-    for (const share of [0.5, 1]) {
-      for (let k = 0; k < 8; k++) {
-        const a = (k * Math.PI) / 4;
-        const q = new DOMPoint(p.x + Math.cos(a) * reach * share, p.y + Math.sin(a) * reach * share);
-        if (path.isPointInFill(q)) return wanted;
-      }
-    }
+    // Exact "within reach of the region": inside it, or inside a stroke of twice the
+    // reach drawn along its edge. Sampling points around the tap misses thin slivers.
+    const before = path.style.strokeWidth;
+    path.style.strokeWidth = String(2 * reach);
+    const near = path.isPointInFill(p) || path.isPointInStroke(p);
+    path.style.strokeWidth = before;
+    if (near) return wanted;
     return hit;
   }
 
@@ -278,6 +298,7 @@ export function createApp(doc, store, opts = {}) {
     $("piece").hidden = true;
     $("banner").hidden = true;
     show("play");
+    sizeLabels(); // needs the map on screen to measure
     drawHud();
     startLoop();
   }
@@ -475,6 +496,7 @@ export function createApp(doc, store, opts = {}) {
   on($("entry"), "submit", (ev) => { ev.preventDefault(); submitInitials(); });
   on($("initials"), "input", (ev) => { ev.target.value = ev.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
   on(doc, "visibilitychange", () => { if (doc.hidden) setPaused(true); });
+  on(doc.defaultView, "resize", () => { if (pack && !$("play").hidden) sizeLabels(); });
   on(doc, "keydown", (ev) => {
     if (ev.target === $("initials")) return;
     if (ev.key === "Escape" || ev.key === "p") setPaused(!paused);

@@ -1,162 +1,526 @@
 {
-  "_comment": "One entry per map pack. Run tools/build_pack.py to regenerate packs/. See DEVELOPING.md.",
+  "_comment": "One entry per map pack, in picker order. Run tools/build_pack.py to regenerate packs/. Source fields are documented at the top of tools/build_pack.py.",
   "packs": [
+    {
+      "id": "mundo-continentes",
+      "title": "Mundo",
+      "subtitle": "Continentes",
+      "chip": "Continentes",
+      "flag": "🌍",
+      "noun": "continentes",
+      "projection": "equalearth",
+      "sphere": true,
+      "names": "data/sources/wikidata-world.csv",
+      "sources": [
+        {
+          "file": "data/sources/ne_110m_admin_0_countries.geojson",
+          "key": "CONTINENT",
+          "rest": "land",
+          "map": {
+            "North America": "Q828",
+            "South America": "Q828",
+            "Europe": "Q46",
+            "Asia": "Q48",
+            "Africa": "Q15",
+            "Oceania": "Q55643",
+            "Antarctica": "Q51"
+          },
+          "split": [
+            {
+              "property": "ADM0_A3",
+              "value": "RUS",
+              "bands": [
+                [
+                  0,
+                  60,
+                  "Q46"
+                ],
+                [
+                  60,
+                  180,
+                  "Q48"
+                ],
+                [
+                  -180,
+                  0,
+                  "Q48"
+                ]
+              ]
+            },
+            {
+              "property": "ADM0_A3",
+              "value": "FRA",
+              "bands": [
+                [
+                  -180,
+                  -30,
+                  "Q828"
+                ],
+                [
+                  -30,
+                  180,
+                  "Q46"
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "min_step": 1.5
+    },
+    {
+      "id": "mundo-oceanos",
+      "title": "Mundo",
+      "subtitle": "Océanos",
+      "chip": "Océanos",
+      "flag": "🌊",
+      "noun": "océanos",
+      "projection": "equalearth",
+      "sphere": "openwater",
+      "theme": "sea",
+      "names": "data/sources/wikidata-world.csv",
+      "sources": [
+        {
+          "file": "data/sources/ne_110m_geography_marine_polys.geojson",
+          "key": "wikidataid",
+          "map": {
+            "Q97": "Q97",
+            "Q98": "Q98",
+            "Q1239": "Q1239",
+            "Q788": "Q788",
+            "Q7354": "Q7354",
+            "Q1247": "Q97",
+            "Q12630": "Q97",
+            "Q184189": "Q97",
+            "Q4918": "Q97",
+            "Q159183": "Q98",
+            "Q33254": "Q98",
+            "Q37660": "Q98",
+            "Q180531": "Q98",
+            "Q41602": "Q98",
+            "Q82931": "Q98",
+            "Q27092": "Q98",
+            "Q38684": "Q1239",
+            "Q58705": "Q1239",
+            "Q23406": "Q1239",
+            "Q34675": "Q1239",
+            "Q131274": "Q788",
+            "Q173343": "Q7354",
+            "Q164466": "Q7354"
+          },
+          "rest": "openwater",
+          "fill_holes": "data/sources/ne_110m_admin_0_countries.geojson"
+        }
+      ],
+      "background": [
+        {
+          "file": "data/sources/ne_110m_admin_0_countries.geojson",
+          "kind": "land"
+        }
+      ],
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "min_step": 1.5
+    },
+    {
+      "id": "mundo-mares",
+      "title": "Mundo",
+      "subtitle": "Mares y golfos",
+      "chip": "Mares",
+      "flag": "⚓",
+      "noun": "mares y golfos",
+      "projection": "equalearth",
+      "sphere": true,
+      "theme": "sea",
+      "names": "data/sources/wikidata-world.csv",
+      "sources": [
+        {
+          "file": "data/sources/ne_110m_geography_marine_polys.geojson",
+          "key": "wikidataid",
+          "filter": {
+            "featurecla": [
+              "sea",
+              "gulf",
+              "bay"
+            ]
+          }
+        }
+      ],
+      "background": [
+        {
+          "file": "data/sources/ne_110m_geography_marine_polys.geojson",
+          "kind": "water",
+          "fill_holes": "data/sources/ne_110m_admin_0_countries.geojson"
+        },
+        {
+          "file": "data/sources/ne_110m_admin_0_countries.geojson",
+          "kind": "land"
+        }
+      ],
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres: Wikidata",
+      "min_step": 1.5
+    },
+    {
+      "id": "norteamerica-paises",
+      "title": "Norteamérica",
+      "subtitle": "Países y territorios",
+      "chip": "Norteamérica",
+      "flag": "🌎",
+      "noun": "países y territorios",
+      "projection": "laea",
+      "names": "data/sources/wikidata-adm0.csv",
+      "sources": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "key": "ISO_A2_EH",
+          "filter": {
+            "ADM0_A3": [
+              "CAN",
+              "USA",
+              "MEX",
+              "GRL"
+            ]
+          },
+          "drop_bboxes": [
+            [
+              -161,
+              18,
+              -154,
+              23
+            ]
+          ]
+        }
+      ],
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land"
+        }
+      ],
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "min_step": 1.5
+    },
     {
       "id": "centroamerica-paises",
       "title": "Centroamérica",
       "subtitle": "Países",
+      "chip": "Centroamérica",
       "flag": "🌎",
       "noun": "países",
+      "names": "data/sources/wikidata-adm0.csv",
       "sources": [
         {
           "file": "data/sources/gtm-adm0.geojson",
-          "id": "GT"
+          "key": "=GT"
         },
         {
           "file": "data/sources/blz-adm0.geojson",
-          "id": "BZ"
+          "key": "=BZ"
         },
         {
           "file": "data/sources/slv-adm0.geojson",
-          "id": "SV"
+          "key": "=SV"
         },
         {
           "file": "data/sources/hnd-adm0.geojson",
-          "id": "HN"
+          "key": "=HN"
         },
         {
           "file": "data/sources/nic-adm0.geojson",
-          "id": "NI"
+          "key": "=NI"
         },
         {
           "file": "data/sources/cri-adm0.geojson",
-          "id": "CR"
+          "key": "=CR"
         },
         {
           "file": "data/sources/pan-adm0.geojson",
-          "id": "PA"
+          "key": "=PA"
         }
       ],
-      "names": "data/sources/wikidata-adm0.csv",
-      "iso_prefix": "",
-      "clip_bbox": [
-        -92.6,
-        6.9,
-        -77.0,
-        18.7
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "GTM",
+              "BLZ",
+              "SLV",
+              "HND",
+              "NIC",
+              "CRI",
+              "PAN"
+            ]
+          }
+        }
       ],
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata"
+    },
+    {
+      "id": "sudamerica-paises",
+      "title": "Sudamérica",
+      "subtitle": "Países y territorios",
+      "chip": "Sudamérica",
+      "flag": "🌎",
+      "noun": "países y territorios",
+      "projection": "laea",
+      "names": "data/sources/wikidata-adm0.csv",
+      "sources": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "key": "ISO_A2_EH",
+          "filter": {
+            "ADM0_A3": [
+              "ARG",
+              "BOL",
+              "BRA",
+              "CHL",
+              "COL",
+              "ECU",
+              "GUY",
+              "PRY",
+              "PER",
+              "SUR",
+              "URY",
+              "VEN"
+            ]
+          },
+          "drop_bboxes": [
+            [
+              -92.5,
+              -1.6,
+              -89,
+              1
+            ]
+          ]
+        },
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "key": "=GF",
+          "filter": {
+            "ADM0_A3": [
+              "FRA"
+            ]
+          },
+          "keep_bbox": [
+            -55,
+            1.5,
+            -51,
+            6.5
+          ]
+        }
+      ],
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land"
+        }
+      ],
+      "attribution": "Mapa: Natural Earth (dominio público) · Nombres y capitales: Wikidata",
+      "min_step": 1.5
     },
     {
       "id": "cr-provincias",
       "title": "Costa Rica",
       "subtitle": "Provincias",
+      "chip": "Costa Rica",
       "flag": "🇨🇷",
       "noun": "provincias",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/cri-adm1.geojson"
+          "file": "data/sources/cri-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName",
+          "keep_bbox": [
+            -86.2,
+            8.0,
+            -82.4,
+            11.4
+          ]
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "CR-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)",
-      "clip_bbox": [
-        -86.2,
-        8.0,
-        -82.4,
-        11.4
-      ]
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "CRI"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "gt-departamentos",
       "title": "Guatemala",
       "subtitle": "Departamentos",
+      "chip": "Guatemala",
       "flag": "🇬🇹",
       "noun": "departamentos",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/gtm-adm1.geojson"
+          "file": "data/sources/gtm-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "GT-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "GTM"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "bz-distritos",
       "title": "Belice",
       "subtitle": "Distritos",
+      "chip": "Belice",
       "flag": "🇧🇿",
       "noun": "distritos",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/blz-adm1.geojson"
+          "file": "data/sources/blz-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "BZ-",
-      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "BLZ"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, Wikimedia Commons (CC BY 2.5) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "sv-departamentos",
       "title": "El Salvador",
       "subtitle": "Departamentos",
+      "chip": "El Salvador",
       "flag": "🇸🇻",
       "noun": "departamentos",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/slv-adm1.geojson"
+          "file": "data/sources/slv-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "SV-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "SLV"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (CC BY-SA 2.0) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "hn-departamentos",
       "title": "Honduras",
       "subtitle": "Departamentos",
+      "chip": "Honduras",
       "flag": "🇭🇳",
       "noun": "departamentos",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/hnd-adm1.geojson"
+          "file": "data/sources/hnd-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "HN-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "HND"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "ni-departamentos",
       "title": "Nicaragua",
       "subtitle": "Departamentos y regiones",
+      "chip": "Nicaragua",
       "flag": "🇳🇮",
       "noun": "departamentos y regiones",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/nic-adm1.geojson"
+          "file": "data/sources/nic-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "NI-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "NIC"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
     },
     {
       "id": "pa-provincias",
       "title": "Panamá",
       "subtitle": "Provincias y comarcas",
+      "chip": "Panamá",
       "flag": "🇵🇦",
       "noun": "provincias y comarcas",
+      "names": "data/sources/wikidata-adm1.csv",
       "sources": [
         {
-          "file": "data/sources/pan-adm1.geojson"
+          "file": "data/sources/pan-adm1.geojson",
+          "key": "shapeISO",
+          "name_property": "shapeName"
         }
       ],
-      "names": "data/sources/wikidata-adm1.csv",
-      "iso_prefix": "PA-",
-      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+      "background": [
+        {
+          "file": "data/sources/ne_50m_admin_0_countries.geojson",
+          "kind": "land",
+          "drop_feature": {
+            "ADM0_A3": [
+              "PAN"
+            ]
+          }
+        }
+      ],
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL) · Mapa: Natural Earth (dominio público)"
     }
   ]
 }
