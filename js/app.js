@@ -42,7 +42,9 @@ export function createApp(doc, store, opts = {}) {
   let game = null;
   let paused = false;
   let frame = 0;
-  let piece = { left: 0, w: 0, h: 0, scale: 1 }; // the falling piece's layout on the stage
+  // The falling piece's layout on the stage. Not called "piece": that name is taken by the
+  // engine's piece in several functions, and shadowing it once put every piece at x = 0.
+  const layout = { left: 0, w: 0, h: 0, scale: 1 };
   let bannerMs = 0;
   let lastResult = null;
 
@@ -198,11 +200,21 @@ export function createApp(doc, store, opts = {}) {
 
   // ---- Falling piece ----
 
-  function drawPiece(piece) {
-    const region = pack.regions.find((r) => r.id === piece.id);
+  // The horizontal extent of the drawn map inside the stage, in CSS pixels.
+  function mapSpan() {
+    const stage = $("stage").getBoundingClientRect();
+    const ctm = $("map").getScreenCTM?.();
+    if (!ctm || !pack) return [0, stage.width];
+    const x0 = new DOMPoint(0, 0).matrixTransform(ctm).x - stage.left;
+    const x1 = new DOMPoint(pack.viewBox[0], 0).matrixTransform(ctm).x - stage.left;
+    return [Math.max(0, x0), Math.min(stage.width, x1)];
+  }
+
+  function drawPiece(spawned) {
+    const region = pack.regions.find((r) => r.id === spawned.id);
     const el = $("piece");
     el.replaceChildren();
-    if (piece.clue === "both" || piece.clue === "shape") {
+    if (spawned.clue === "both" || spawned.clue === "shape") {
       const svg = doc.createElementNS(SVG, "svg");
       const [x, y, w, h] = region.box;
       // Margin so the outline and its halo are not clipped.
@@ -213,32 +225,34 @@ export function createApp(doc, store, opts = {}) {
       svg.append(path);
       el.append(svg);
     }
-    if (piece.clue !== "shape") {
+    if (spawned.clue !== "shape") {
       const name = doc.createElement("span");
-      name.textContent = piece.clue === "capital" ? `★ ${region.capital}` : region.name;
+      name.textContent = spawned.clue === "capital" ? `★ ${region.capital}` : region.name;
       el.append(name);
     }
     el.classList.remove("zap", "lost");
     el.style.transition = "none";
     el.hidden = false;
-    // Fit the piece to the stage: shrink it if it is wider (a long sea name on a phone),
-    // and keep its whole width on screen wherever it falls.
+    // Fit the piece to the screen: shrink it if it is wider than the stage (a long sea
+    // name on a phone), and drop it somewhere above the map as drawn, which on a wide
+    // desktop screen is much narrower than the stage. Its whole width stays on screen.
     const stageW = $("stage").clientWidth;
     const margin = 8;
-    piece.w = el.offsetWidth;
-    piece.h = el.offsetHeight;
-    piece.scale = Math.min(1, (stageW - 2 * margin) / piece.w);
-    const half = (piece.w * piece.scale) / 2;
-    const wanted = stageW * (0.25 + Math.random() * 0.5);
-    piece.left = Math.min(Math.max(wanted, half + margin), stageW - half - margin);
+    layout.w = el.offsetWidth;
+    layout.h = el.offsetHeight;
+    layout.scale = Math.min(1, (stageW - 2 * margin) / layout.w);
+    const half = (layout.w * layout.scale) / 2;
+    const [from, to] = mapSpan();
+    const wanted = from + (to - from) * (0.2 + Math.random() * 0.6);
+    layout.left = Math.min(Math.max(wanted, half + margin), stageW - half - margin);
     movePiece(0);
   }
 
   function movePiece(frac) {
     const stage = $("stage");
     const el = $("piece");
-    const y = frac * Math.max(0, stage.clientHeight - piece.h * piece.scale);
-    el.style.transform = `translate(${piece.left - (piece.w * piece.scale) / 2}px, ${y}px) scale(${piece.scale})`;
+    const y = frac * Math.max(0, stage.clientHeight - layout.h * layout.scale);
+    el.style.transform = `translate(${layout.left - (layout.w * layout.scale) / 2}px, ${y}px) scale(${layout.scale})`;
     $("timer").style.transform = `scaleX(${1 - frac})`;
     // The bar warns before the piece lands.
     $("timer").classList.toggle("low", frac > 0.7);
@@ -247,10 +261,10 @@ export function createApp(doc, store, opts = {}) {
   function zapPiece(region) {
     const el = $("piece");
     const p = stagePoint(region);
-    const s = 0.2 * piece.scale;
+    const s = 0.2 * layout.scale;
     el.style.transition = "";
     el.classList.add("zap");
-    el.style.transform = `translate(${p.x - (piece.w * s) / 2}px, ${p.y - (piece.h * s) / 2}px) scale(${s})`;
+    el.style.transform = `translate(${p.x - (layout.w * s) / 2}px, ${p.y - (layout.h * s) / 2}px) scale(${s})`;
   }
 
   function floatText(at, text, cls) {

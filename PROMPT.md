@@ -60,3 +60,4 @@ No clarifying questions were asked; the assumptions taken are in `docs/DECISIONS
   > also map selection process should be some kind of dropdown because sideways scrolling does not scale.
 - 2026-11-16 — "when you're done, push here: https://github.com/MarAvFe/ubicatex"
 - 2026-11-16 — "deploy to my site in marafve.github.io"
+- 2026-11-16 — "after the fix, all falling items are left margin attached, but on desktop it's odd. it should have som screen size validation. also, every tap stalls the sound for about 0.5s, no sense in being related"

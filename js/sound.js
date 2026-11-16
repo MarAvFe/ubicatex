@@ -13,12 +13,14 @@ export function createSound(isMuted) {
   let step = 0;
   let wantMusic = false;
 
+  // Called on every touch, because browsers only allow sound after one. It must not
+  // restart the tune: doing so silenced it until the next beat on each tap.
   function unlock() {
     const AC = globalThis.AudioContext ?? globalThis.webkitAudioContext;
     if (!AC) return;
-    ctx ??= new AC();
+    ctx ??= new AC({ latencyHint: "interactive" });
     if (ctx.state === "suspended") ctx.resume();
-    if (wantMusic) music(true);
+    if (wantMusic && !musicTimer) music(true);
   }
 
   function note(freq, { at = 0, dur = 0.12, type = "triangle", gain = 0.12, slideTo = null } = {}) {
@@ -40,6 +42,7 @@ export function createSound(isMuted) {
 
   function music(on) {
     wantMusic = on;
+    if (on && musicTimer) return; // already playing: keep the beat
     clearInterval(musicTimer);
     musicTimer = 0;
     if (!on || !ctx) return;
@@ -54,6 +57,8 @@ export function createSound(isMuted) {
   return {
     unlock,
     music,
+    // For the self-test: which timer drives the tune (0 when silent).
+    musicTimer: () => musicTimer,
     tap: () => note(880, { dur: 0.04, type: "square", gain: 0.03 }),
     // The chime climbs with the multiplier, so a streak can be heard building. The top
     // note is SCALE[i + 4], so i stops at SCALE.length - 5: at ×5 it used to read past
@@ -74,5 +79,5 @@ export function createSound(isMuted) {
 // For the self-test and for browsers without Web Audio.
 export function silentSound() {
   const noop = () => {};
-  return { unlock: noop, music: noop, tap: noop, good: noop, bad: noop, miss: noop, levelUp: noop, over: noop, record: noop };
+  return { unlock: noop, music: noop, musicTimer: () => 0, tap: noop, good: noop, bad: noop, miss: noop, levelUp: noop, over: noop, record: noop };
 }

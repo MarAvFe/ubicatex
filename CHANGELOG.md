@@ -42,6 +42,8 @@ All notable changes to this project are documented here. The format follows
 - Map names keep the same size on screen on every map.
 
 ### Fixed
+- Falling pieces all started at the left edge of the screen.
+- Each tap paused the menu music for a moment.
 - The game froze when the streak multiplier reached ×5 (on Continentes: no "Siguiente" after level 2).
 - The pause screen showed the rotate hint over its buttons.
 - On small phones with the rules open, the top of the home screen could not be reached.

@@ -81,3 +81,8 @@ Format: reading taken — reason — how to change.
 ## Deploy (2026-11-16)
 - **Hosted with GitHub Pages from this repository's `main`, at marcelloavila.com/ubicatex/** (the site at maravfe.github.io redirects to that custom domain). — Asked for; the files stay in one repository and every push deploys. — Disable Pages in the repository settings; the site repository was not touched.
 - **Published with two known data gaps, flagged in `docs/SPEC.md`:** province names come from Wikidata and were not checked against official lists, and Panama lacks the Naso Tjër Di comarca (its boundary data is from 2017). Capitals are only shown on country maps, where they were checked against a second source. — Deploy was asked for now. — Fix in the data, rebuild, push.
+
+## Sixth round (2026-11-16)
+- **Bug fixed: every falling piece started at the left edge** (since the fit-to-screen change). Its position was stored in a variable shadowed by a parameter of the same name. A test now checks that pieces spread out above the map at 1200 px and 360 px. — Renamed to `layout` in `js/app.js`.
+- **Pieces fall above the map as drawn, not across the whole stage** (the middle 60% of the map's width, kept on screen). — On a wide desktop screen the map is much narrower than the window. — `mapSpan` and `drawPiece` in `js/app.js`.
+- **Bug fixed: each tap paused the menu tune.** Every touch re-unlocks audio (browsers require a touch first), and that also restarted the tune, which stays silent until its next beat. Now a playing tune is left alone. — `unlock` and `music` in `js/sound.js`; a regression test.

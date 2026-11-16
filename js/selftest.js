@@ -372,6 +372,19 @@ const tests = {
     s.bad(); s.miss(); s.levelUp(); s.over(); s.record(); s.tap();
     s.music(true); s.music(false);
   },
+  "a tap does not restart the menu tune"() {
+    // Regression: unlock() runs on every touch and used to restart the tune, so each tap
+    // silenced the music until the next beat.
+    const s = createSound(() => false);
+    s.unlock();
+    s.music(true);
+    const timer = s.musicTimer();
+    ok(timer, "the tune did not start");
+    for (let i = 0; i < 5; i++) { s.unlock(); s.music(true); }
+    eq(s.musicTimer(), timer, "the tune was restarted:");
+    s.music(false);
+    eq(s.musicTimer(), 0);
+  },
   async "a failing sound cannot stop a level from ending"() {
     const broken = () => Object.fromEntries(Object.keys(silentSound()).map((k) => [k, () => { throw new Error("no audio"); }]));
     const app = createApp(document, memoryStore(), { rng: seededRng(13), makeSound: broken });
@@ -384,6 +397,39 @@ const tests = {
       }
       eq(document.getElementById("review").hidden, false, "no Siguiente after a sound error:");
     } finally { app.destroy(); }
+  },
+  async "falling pieces spread out above the map, on a wide screen and a narrow one"() {
+    // Regression: a shadowed variable put every piece at the left edge, and the fit test
+    // below could not tell, because a piece at x = 0 is still inside the screen.
+    const play = document.getElementById("play");
+    const app = createApp(document, memoryStore(), { rng: seededRng(16) });
+    try {
+      for (const width of ["1200px", "360px"]) {
+        play.style.width = width;
+        await app.start("cr-provincias");
+        app.stopLoop();
+        const stage = document.getElementById("stage").getBoundingClientRect();
+        const svg = document.getElementById("map").getScreenCTM();
+        const mapLeft = Math.max(stage.left, new DOMPoint(0, 0).matrixTransform(svg).x);
+        const mapRight = Math.min(stage.right, new DOMPoint(app.pack.viewBox[0], 0).matrixTransform(svg).x);
+        const centres = [];
+        for (let i = 0; i < 4000 && centres.length < 14; i++) {
+          if (app.game.state.phase === "review") document.getElementById("review-next").click();
+          app.step(50);
+          const p = app.game.state.current;
+          if (p && p.elapsed === 50) {
+            const r = document.getElementById("piece").getBoundingClientRect();
+            const c = (r.left + r.right) / 2;
+            ok(r.left >= stage.left - 0.5 && r.right <= stage.right + 0.5, `${width}: piece off screen`);
+            ok(c >= mapLeft - 1 && c <= mapRight + 1, `${width}: piece centre ${Math.round(c)} outside the map ${Math.round(mapLeft)}..${Math.round(mapRight)}`);
+            centres.push(c);
+            app.tap(p.id);
+          }
+        }
+        const spread = Math.max(...centres) - Math.min(...centres);
+        ok(spread > (mapRight - mapLeft) * 0.2, `${width}: pieces all fall in one place (spread ${Math.round(spread)} px)`);
+      }
+    } finally { app.destroy(); play.style.width = ""; }
   },
   async "a falling piece always fits on a narrow phone screen"() {
     const play = document.getElementById("play");
