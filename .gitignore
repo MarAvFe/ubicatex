@@ -1,0 +1,12 @@
+# Secrets: copy .env.example to .env; never commit .env
+.env
+.env.*
+!.env.example
+
+# Scratch and editor files
+scratch/
+*.tmp
+*.log
+.idea/
+.vscode/
+.DS_Store

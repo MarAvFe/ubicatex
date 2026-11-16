@@ -1,0 +1,11 @@
+{
+  "packs": [
+    {
+      "id": "cr-provincias",
+      "title": "Costa Rica",
+      "subtitle": "Provincias",
+      "flag": "🇨🇷",
+      "attribution": "Límites: geoBoundaries, © colaboradores de OpenStreetMap (ODbL)"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapazo</title>
+<meta name="description" content="Un juego de geografía: las provincias caen y hay que tocar su lugar en el mapa antes de que lleguen al suelo.">
+<meta name="theme-color" content="#0f4c5c">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main id="home" class="screen">
+  <h1 class="logo">Mapazo</h1>
+  <p class="tagline">Las piezas caen. Toque su lugar en el mapa antes de que lleguen al suelo.</p>
+  <div id="packs" class="packs"></div>
+  <ul class="how">
+    <li><b>Rápido</b> vale más: cada pieza da más puntos mientras más alta esté.</li>
+    <li><b>Racha</b>: tres aciertos seguidos al primer intento suben el multiplicador.</li>
+    <li><b>Tres vidas</b>: se pierde una cuando una pieza toca el suelo.</li>
+  </ul>
+  <p id="credits" class="credits"></p>
+</main>
+
+<main id="play" class="screen" hidden>
+  <header class="hud">
+    <button id="pause" class="icon" type="button" aria-label="Pausa">❚❚</button>
+    <div class="stat"><span class="label">Puntos</span><span id="score" class="value">0</span></div>
+    <div class="stat"><span class="label">Nivel</span><span id="level" class="value">1</span></div>
+    <div class="stat"><span class="label">Racha</span><span id="combo" class="value">×1</span></div>
+    <div id="lives" class="lives" aria-label="Vidas"></div>
+  </header>
+  <div class="timer"><div id="timer"></div></div>
+  <div id="stage" class="stage">
+    <svg id="map" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet"></svg>
+    <div id="piece" class="piece" hidden></div>
+    <div id="banner" class="banner" hidden></div>
+    <div id="paused" class="overlay" hidden>
+      <h2>Pausa</h2>
+      <button id="resume" type="button">Seguir</button>
+      <button id="quit" class="ghost" type="button">Salir</button>
+    </div>
+  </div>
+</main>
+
+<main id="over" class="screen" hidden>
+  <p class="eyebrow" id="over-pack"></p>
+  <h2 id="over-title">Fin del juego</h2>
+  <p class="bigscore" id="over-score">0</p>
+  <dl class="results">
+    <div><dt>Nivel</dt><dd id="over-level">1</dd></div>
+    <div><dt>Aciertos</dt><dd id="over-correct">0</dd></div>
+    <div><dt>Mejor racha</dt><dd id="over-streak">0</dd></div>
+  </dl>
+  <button id="again" type="button">Jugar otra vez</button>
+  <button id="share" class="ghost" type="button">Compartir resultado</button>
+  <button id="home-btn" class="ghost" type="button">Inicio</button>
+</main>
+
+<div id="unsupported" class="notice" hidden>
+  No se pudo cargar el juego. Revise la conexión y vuelva a intentar.
+</div>
+<pre id="selftest" hidden></pre>
+
+<script type="module">
+  // Open with #selftest to run the tests instead of the game (see DEVELOPING.md).
+  if (location.hash === "#selftest") {
+    const { runSelftest } = await import("./js/selftest.js");
+    runSelftest(document.getElementById("selftest"));
+  } else {
+    const [{ createApp }, { browserStore }] = await Promise.all([import("./js/app.js"), import("./js/store.js")]);
+    createApp(document, browserStore("mapazo:v1")).showHome().catch(() => {
+      document.getElementById("home").hidden = true;
+      document.getElementById("unsupported").hidden = false;
+    });
+  }
+</script>
+</body>
+</html>
