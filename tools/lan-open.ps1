@@ -1,6 +1,8 @@
 # Lets phones on the home network open the game served from WSL on port 8000.
 # Run in Windows PowerShell as administrator. Undo with lan-close.ps1.
 # Run it again after restarting the PC: WSL gets a new internal address each boot.
+# A log, because an elevated window closes before anyone can read it.
+Start-Transcript -Path "$env:TEMP\ubicate-lan.log" -Force | Out-Null
 $ErrorActionPreference = 'Stop'
 $port = 8000
 $rule = 'Ubicate dev server (port 8000, home network only)'
@@ -22,3 +24,4 @@ if (-not (Get-NetFirewallRule -DisplayName $rule -ErrorAction SilentlyContinue))
 $lan = Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway } | ForEach-Object { $_.IPv4Address.IPAddress }
 Write-Host "WSL $wslIp forwarded. On the phone, open:"
 $lan | ForEach-Object { Write-Host "  http://${_}:$port/" }
+Stop-Transcript | Out-Null
