@@ -3,6 +3,8 @@
 **A geography game in Spanish for the browser: continents, oceans, seas, countries and provinces fall from the
 top of the screen and you tap where each one belongs on the map before it lands.**
 
+**Play it: [marcelloavila.com/ubicatex](https://marcelloavila.com/ubicatex/)**
+
 <img src="docs/screenshots/home.png" alt="Home screen with the map picker" height="400"> <img src="docs/screenshots/mobile.png" alt="A province falling above the map of Costa Rica" height="400"> <img src="docs/screenshots/scores.png" alt="Arcade-style top scores" height="400">
 
 <img src="docs/screenshots/desktop.png" alt="The continents map on a desktop screen" width="640">

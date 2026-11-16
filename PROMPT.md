@@ -59,3 +59,4 @@ No clarifying questions were asked; the assumptions taken are in `docs/DECISIONS
   >
   > also map selection process should be some kind of dropdown because sideways scrolling does not scale.
 - 2026-11-16 — "when you're done, push here: https://github.com/MarAvFe/ubicatex"
+- 2026-11-16 — "deploy to my site in marafve.github.io"

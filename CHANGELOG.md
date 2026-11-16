@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Hosted at https://marcelloavila.com/ubicatex/ (GitHub Pages).
 - "Mapa" view: every map coloured and named for study; tap a region for its name and capital.
 - End-of-level review: the right answers colour in and the game waits for "Siguiente".
 - `tools/lan-open.ps1` / `tools/lan-close.ps1` to play from a phone on the home network.

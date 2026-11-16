@@ -64,6 +64,13 @@ Not built yet, and needed for the planned maps:
 - **Maps with regions too small to see.** Taps are forgiven by 14 px, which makes every current map
   playable, but `docs/MAPS.md` lists regions a phone player can barely see. Cantones will be worse.
 
+## Deploy
+
+GitHub Pages serves `main` from the repository root at <https://marcelloavila.com/ubicatex/> (the user
+site's custom domain applies to project sites). Every push to `main` redeploys; there is no build step.
+`.nojekyll` makes Pages serve the files as they are. Check the live copy with
+`CHROME=... ./selftest.sh` against a local server, or open `https://marcelloavila.com/ubicatex/#selftest`.
+
 ## Release
 
 Batch changes under `[Unreleased]` in `CHANGELOG.md`; cut a version with the `release` skill.

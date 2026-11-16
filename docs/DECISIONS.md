@@ -77,3 +77,7 @@ Format: reading taken — reason — how to change.
 - **Maps are chosen from a native dropdown grouped Mundo / América / Provincias de Centroamérica**, replacing the sideways chips. — Chips do not scale with more maps; phones have a good built-in picker. — `group` per pack in `tools/packs.json`; `showHome` in `js/app.js`.
 - **Rules and sources sit behind "Cómo jugar" and "Fuentes" on the home screen**, closed by default. — Asked for. — The `<details>` blocks in `index.html`.
 - **Pushed to github.com/MarAvFe/ubicatex, which is public.** — You created it and asked for the push. The README's example LAN address was replaced with a placeholder first. — Make it private in the repository settings.
+
+## Deploy (2026-11-16)
+- **Hosted with GitHub Pages from this repository's `main`, at marcelloavila.com/ubicatex/** (the site at maravfe.github.io redirects to that custom domain). — Asked for; the files stay in one repository and every push deploys. — Disable Pages in the repository settings; the site repository was not touched.
+- **Published with two known data gaps, flagged in `docs/SPEC.md`:** province names come from Wikidata and were not checked against official lists, and Panama lacks the Naso Tjër Di comarca (its boundary data is from 2017). Capitals are only shown on country maps, where they were checked against a second source. — Deploy was asked for now. — Fix in the data, rebuild, push.
